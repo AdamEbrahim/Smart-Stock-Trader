@@ -27,10 +27,14 @@ class multiStockView:
 
     #replaces a stock at index currIndex
     def replaceStock(self, currIndex, newStock):
-        if currIndex >= self.numStocks or currIndex < 0:
+        if currIndex >= self.size or currIndex < 0:
             return
         
-        self.stocks[currIndex] = newStock
+        if currIndex >= self.numStocks:
+            self.stocks[self.numStocks] = newStock
+            self.numStocks = self.numStocks + 1
+        else:
+            self.stocks[currIndex] = newStock
         
         recalibrateView()
 

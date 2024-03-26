@@ -1,6 +1,8 @@
 import alpacaAPI
 import yaml
 
+from multiStockView import multiStockView
+
 async def quote_data_handler(data):
     print(data)
 
@@ -10,7 +12,9 @@ if __name__ == '__main__':
     with open('config.yml', 'r') as file:
         keys = yaml.safe_load(file)
 
-    alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
+    stockList = multiStockView(4)
+    alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
+    print(stockList.stocks)
 
     # client = StockHistoricalDataClient(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
 
