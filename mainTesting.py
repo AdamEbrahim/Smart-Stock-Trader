@@ -1,10 +1,40 @@
 import alpacaAPI
+from alpaca.data.live import StockDataStream
 import yaml
+import threading
+import asyncio
+import time
+import concurrent.futures
 
 from multiStockView import multiStockView
+from stockObject import stockObject
 
-async def quote_data_handler(data):
+#todo: acquire and release lock of stock object when changing queue
+async def trade_data_handler1(data):
+    print("trade 1")
     print(data)
+    return
+
+
+#symbols = list of string symbols of stocks
+def setupWebsocket(api_key, secret_key, symbols):
+    print(api_key)
+
+    global websocket_client1
+    websocket_client1 = StockDataStream(api_key, secret_key)
+    websocket_client1.subscribe_trades(trade_data_handler1, *symbols)
+    websocket_client1.run()
+    # print("hi")
+
+def websocketSwitchHandler(stockList):
+    while True:
+        for stock in stockList:
+            websocket_client1.subscribe_trades(trade_data_handler1, stock)
+            time.sleep(5)
+
+
+        
+
 
 if __name__ == '__main__':
 
@@ -12,21 +42,32 @@ if __name__ == '__main__':
     with open('config.yml', 'r') as file:
         keys = yaml.safe_load(file)
 
-    stockList = multiStockView(4)
-    alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
-    print(stockList.stocks)
+    stockList = ["AAPL", "SPY"]
 
-    # client = StockHistoricalDataClient(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
+    #executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
+    #executor.submit(setupWebsocket, keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList)
+    # time.sleep(5)
+    # executor.submit(websocketSwitchHandler, stockList)
+    #setupWebsocket(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList)
 
-    # # multi symbol request - single symbol is similar
-    # multisymbol_request_params = StockLatestQuoteRequest(symbol_or_symbols=["SPY", "GLD", "TLT"])
 
-    # latest_multisymbol_quotes = client.get_stock_latest_quote(multisymbol_request_params)
+    # threading.Thread(target=setupWebsocket, args=(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList)).start()
+    # time.sleep(3)
+    # threading.Thread(target=websocketSwitchHandler, args=[stockList]).start()
 
-    # gld_latest_ask_price = latest_multisymbol_quotes["GLD"].ask_price
-    # print(gld_latest_ask_price)
+    #while True:
+        #print("hitwo")
+        #time.sleep(.25)
 
-    # websocket_client = StockDataStream(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
-    # websocket_client.subscribe_quotes(quote_data_handler, "SPY")
-    # websocket_client.run()
+
+    #setupWebsocket(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "SPY")
+
+    # stockList = multiStockView(4)
+    # alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
+    # print(stockList.stocks)
+
+    #alpacaAPI.historicalTesting(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
+
+
+
 

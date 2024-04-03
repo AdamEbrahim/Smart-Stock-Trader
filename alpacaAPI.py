@@ -1,9 +1,9 @@
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import MarketMoversRequest
+from alpaca.data.requests import MarketMoversRequest, StockLatestQuoteRequest, StockQuotesRequest, StockLatestTradeRequest, StockTradesRequest
 from alpaca.data.historical.screener import ScreenerClient
 from alpaca.data.models.screener import Movers, Mover
-from alpaca.data.live import StockDataStream
-import yaml
+from alpaca.data.enums import DataFeed
+from datetime import datetime
 
 from multiStockView import multiStockView
 from stockObject import stockObject
@@ -28,5 +28,20 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
             currentStockList.replaceStock(i, currStock)
 
     return
+
+# im gonna get the bar data minute wise to do historical data
+def historicalTesting(api_key, secret_key):
+    client = StockHistoricalDataClient(api_key, secret_key)
+
+    multiSymbolRequest1 = StockLatestTradeRequest(symbol_or_symbols="AAPL")
+    multiSymbolRequest2 = StockTradesRequest(symbol_or_symbols="AAPL", start=datetime(2024, 4, 3, 19, 59, 55), end=datetime(2024, 4, 3, 20), limit=10, feed=DataFeed.IEX)
+
+    latestTrades = client.get_stock_latest_trade(multiSymbolRequest1)
+    regularTrades = client.get_stock_trades(multiSymbolRequest2)
+
+    print("latest trades:")
+    print(latestTrades)
+    print("regular trades:")
+    print(regularTrades)
 
 
