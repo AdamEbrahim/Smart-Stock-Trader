@@ -68,6 +68,8 @@ if __name__ == '__main__':
 
     #alpacaAPI.historicalTesting(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
 
+    currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", "fiveYear")
+
 
 
 

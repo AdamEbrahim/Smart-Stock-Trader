@@ -1,7 +1,11 @@
 from enum import Enum
-from alpaca.data.timeframe import TimeFrame
+from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
+from alpaca.data.historical import StockHistoricalDataClient
+from alpaca.data.requests import MarketMoversRequest, StockLatestQuoteRequest, StockQuotesRequest, StockLatestTradeRequest, StockTradesRequest, StockBarsRequest, StockLatestBarRequest
 import threading
 from collections import deque
+from datetime import datetime, timedelta
+from utilities import isMarketOpen, isMarketOpenDay
 
 class dataType(Enum):
     BAR = "Bar"
@@ -11,31 +15,115 @@ class dataType(Enum):
 
 class stockObject:
 
-    #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit
-    def __init__(self, symbol, timeframeAmount, timeframeUnit):
+    #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit, "oneYear" for year interval, or "fiveYear" for five year interval
+    def __init__(self, api_key, secret_key, symbol, timeframeUnit):
+        self.api_key = api_key
+        self.secret_key = secret_key
         self.symbol = symbol
 
         self.model = dataType.TRADE
         
         #need a lock for data as web socket thread and main thread (when initializing historical data) may write to data at same time
         self.data = deque()
-        self.lock = threading.Lock()
+        self.dataLock = threading.Lock()
+        self.maxDataPoints = 60
 
-        self.timeInterval = TimeFrame(timeframeAmount, timeframeUnit)
+        self.currentPrice = 0
+
+        self.timeInterval = timeframeUnit
 
         self.initHistoricData()
 
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit
-    def changeTimeInterval(self, timeframeAmount, timeframeUnit):
-        del self.timeInterval
-        self.timeInterval = TimeFrame(timeframeAmount, timeframeUnit)
+    def changeTimeInterval(self, timeframeUnit):
+        self.timeInterval = timeframeUnit
         print("changed time interval")
         self.initHistoricData()
 
 
-    def initHistoricData(self):
-        self.lock.acquire()
-        print("hi")
+    def initHistoricData(self, marketOpen):
+        client = StockHistoricalDataClient(self.api_key, self.secret_key)
+        requiredTimeFrame = 0
+        d = 0 #timedelta
+        now = datetime.now()
 
-        self.lock.release()
+        match self.timeInterval:
+            case TimeFrameUnit.Minute: #live data feed
+                print("Minute")
+
+            case TimeFrameUnit.Hour: #show last 1 hour
+                print("Hour")
+                d = timedelta(hours=1)
+
+                requiredTimeFrame = TimeFrameUnit.Minute
+
+            case TimeFrameUnit.Day: #show since beginning of day
+                print("Day")
+                d = timedelta(days=1)
+
+                requiredTimeFrame = TimeFrameUnit.Minute
+
+            case TimeFrameUnit.Week: #show since 1 week ago
+                print("Week")
+                d = timedelta(weeks=1)
+
+                requiredTimeFrame = TimeFrameUnit.Hour
+
+            case TimeFrameUnit.Month: #show since 1 month ago
+                print("Month")
+                #d = timedelta()
+
+                #requiredTimeFrame = 
+
+            case "oneYear": #show since 1 year ago
+                print("1 Year")
+                d = timedelta(days=365)
+
+                requiredTimeFrame = TimeFrame.Day 
+
+            case _: #show since 5 year ago
+                print("5 year")
+
+                d = timedelta(days=365*5)
+
+                requiredTimeFrame = TimeFrame.Day 
+        
+
+        requiredStart = now - d
+        #endtime defaults to now
+        barsRequest = StockBarsRequest(symbol_or_symbols=self.symbol, timeframe=requiredTimeFrame, start=requiredStart)
+        bars = client.get_stock_bars(barsRequest)
+        barData = bars[self.symbol]
+
+        if len(barData) < self.maxDataPoints:
+            #todo: implement feature for what to do with less than maxdatapoints like if it is still morning
+            print("error in retrieving stock data; insufficient number of data points")
+            return
+        
+        interval = (1.0 * (len(barData) - 1)) / (self.maxDataPoints - 1)
+
+        self.dataLock.acquire()
+        print("hi")
+        self.data.clear()
+
+        i = 0
+        while i < len(barData):
+            print(i)
+            self.data.append({"close": barData[int(i)].close,
+                              "high": barData[int(i)].high,
+                              "low": barData[int(i)].low,
+                              "open": barData[int(i)].open,
+                              "timestamp": barData[int(i)].timestamp})
+            i = i + interval
+
+        self.dataLock.release()
+
+        print(self.data)
+
+
+now = datetime.now()
+d = timedelta(days=31)
+requiredStart = now - d
+
+print(requiredStart)

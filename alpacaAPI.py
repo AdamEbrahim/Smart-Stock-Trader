@@ -1,8 +1,9 @@
 from alpaca.data.historical import StockHistoricalDataClient
-from alpaca.data.requests import MarketMoversRequest, StockLatestQuoteRequest, StockQuotesRequest, StockLatestTradeRequest, StockTradesRequest
+from alpaca.data.requests import MarketMoversRequest, StockLatestQuoteRequest, StockQuotesRequest, StockLatestTradeRequest, StockTradesRequest, StockBarsRequest, StockLatestBarRequest
 from alpaca.data.historical.screener import ScreenerClient
 from alpaca.data.models.screener import Movers, Mover
 from alpaca.data.enums import DataFeed
+from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from datetime import datetime
 
 from multiStockView import multiStockView
@@ -33,15 +34,24 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
 def historicalTesting(api_key, secret_key):
     client = StockHistoricalDataClient(api_key, secret_key)
 
-    multiSymbolRequest1 = StockLatestTradeRequest(symbol_or_symbols="AAPL")
-    multiSymbolRequest2 = StockTradesRequest(symbol_or_symbols="AAPL", start=datetime(2024, 4, 3, 19, 59, 55), end=datetime(2024, 4, 3, 20), limit=10, feed=DataFeed.IEX)
+    #Trades
+    # multiSymbolRequest1 = StockLatestTradeRequest(symbol_or_symbols="AAPL")
+    # multiSymbolRequest2 = StockTradesRequest(symbol_or_symbols="AAPL", start=datetime(2024, 4, 3, 19, 59, 55), end=datetime(2024, 4, 3, 20), limit=10, feed=DataFeed.IEX)
 
-    latestTrades = client.get_stock_latest_trade(multiSymbolRequest1)
-    regularTrades = client.get_stock_trades(multiSymbolRequest2)
+    # latestTrades = client.get_stock_latest_trade(multiSymbolRequest1)
+    # regularTrades = client.get_stock_trades(multiSymbolRequest2)
 
-    print("latest trades:")
-    print(latestTrades)
-    print("regular trades:")
-    print(regularTrades)
+    #Bars
+    # multiSymbolRequestBars1 = StockLatestBarRequest(symbol_or_symbols=["AAPL", "SPY"])
+    multiSymbolRequestBars2 = StockBarsRequest(symbol_or_symbols="AAPL", timeframe=TimeFrame(1, TimeFrameUnit.Day), start=datetime(2024, 4, 3))
+    multiSymbolRequestBars3 = StockBarsRequest(symbol_or_symbols="AAPL", timeframe=TimeFrame(1, TimeFrameUnit.Hour), start=datetime(2024, 4, 3))
 
+    # latestBars = client.get_stock_latest_bar(multiSymbolRequestBars1)
+    regularBars = client.get_stock_bars(multiSymbolRequestBars2)
+    regularBars2 = client.get_stock_bars(multiSymbolRequestBars3)
+
+    print("regular bars 1:")
+    print(regularBars)
+    print("regular bars 2:")
+    print(regularBars2)
 
