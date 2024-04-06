@@ -1,54 +1,63 @@
 from view import recalibrateView
+from constantTimer import constantTimer
+from collections import deque
 
 class multiStockView:
 
-    def __init__(self, size):
-        self.size = size #number of stocks in view
+    def __init__(self, size, timerInterval):
+        self.size = size #max number of stocks in view, determines grid layout (4 means 2x2)
 
-        self.numStocks = 0
-        self.stocks = [None for i in range(size)]
+        self.stocks = deque()
+
+        #timer and timerHandle responsible for periodically updating all stock data points if needed
+        self.timer = constantTimer(timerInterval, self.timerHandle)
+        self.timer.start()
+
+
+    def timerHandle(self):
+        for i in range(len(self.stocks)):
+            currStock = self.stocks[i]
         
 
-    #removes the stock at index currIndex
-    def removeStock(self, currIndex):
-        if currIndex >= self.numStocks or currIndex < 0:
+    #removes a stock given its symbol
+    def removeStock(self, stockToRemoveSymbol):
+        currIndex = -1
+        for i in range(len(self.stocks)):
+            if self.stocks[i].symbol == stockToRemoveSymbol:
+                currIndex = i
+                break
+
+        if currIndex == -1:
+            print("stock to remove is not a current stock")
             return
         
-        for i in range(currIndex, self.numStocks):
-            if i == self.numStocks - 1:
-                self.stocks[i] = None
-            else:
-                self.stocks[i] = self.stocks[i+1]
-
-        self.numStocks = self.numStocks - 1
+        del self.stocks[currIndex]
 
         recalibrateView()
 
 
-    #replaces a stock at index currIndex
-    def replaceStock(self, currIndex, newStock):
-        if currIndex >= self.size or currIndex < 0:
+    #replaces a stock given its symbol
+    def replaceStock(self, stockToReplaceSymbol, newStock):
+        currIndex = -1
+        for i in range(len(self.stocks)):
+            if self.stocks[i].symbol == stockToReplaceSymbol:
+                currIndex = i
+                break
+
+        if currIndex == -1:
+            print("stock to replace is not a current stock")
             return
         
-        if currIndex >= self.numStocks:
-            self.stocks[self.numStocks] = newStock
-            self.numStocks = self.numStocks + 1
-        else:
-            self.stocks[currIndex] = newStock
+        self.stocks[currIndex] = newStock
         
         recalibrateView()
 
 
-    #adds a stock
+    #adds a stock, newStock is a stockObject
     def addStock(self, newStock):
-        if self.numStocks < self.size:
-            self.stocks[self.numStocks] = newStock
-            self.numStocks = self.numStocks + 1
-        else:
-            for i in range(0, self.size):
-                if i == self.size - 1:
-                    self.stocks[i] = newStock
-                else:
-                    self.stocks[i] = self.stocks[i+1]
+        self.stocks.append(newStock)
+
+        if len(self.stocks) > self.size:
+            self.stocks.popleft()
 
         recalibrateView()

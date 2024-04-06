@@ -21,12 +21,12 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
         market_losers = market_movers.losers
         for i in range(currentStockList.size):
             currStock = stockObject(market_losers[i].symbol)
-            currentStockList.replaceStock(i, currStock)
+            currentStockList.addStock(currStock)
     else:
         market_gainers = market_movers.gainers
         for i in range(currentStockList.size):
             currStock = stockObject(market_gainers[i].symbol)
-            currentStockList.replaceStock(i, currStock)
+            currentStockList.addStock(currStock)
 
     return
 

@@ -58,8 +58,7 @@ def isMarketOpenDay(dtObject):
     return True
 
 
-
-isMarketOpen(datetime.now(timezone.utc))
-dto = datetime.fromisoformat('2024-04-04T13:45:23Z')
-print(dto)
-isMarketOpen(dto)
+if __name__ == '__main__':
+    isMarketOpen(datetime.now(timezone.utc))
+    #dto = datetime.fromisoformat('2024-04-04T13:45:23Z')
+    #isMarketOpen(dto)

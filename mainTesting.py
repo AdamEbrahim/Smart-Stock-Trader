@@ -1,5 +1,6 @@
 import alpacaAPI
 from alpaca.data.live import StockDataStream
+from alpaca.data.timeframe import TimeFrameUnit
 import yaml
 import threading
 import asyncio
@@ -68,7 +69,7 @@ if __name__ == '__main__':
 
     #alpacaAPI.historicalTesting(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
 
-    currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", "fiveYear")
+    currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Day)
 
 
 
