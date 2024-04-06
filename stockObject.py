@@ -133,6 +133,15 @@ class stockObject:
         print(self.data)
 
 
+    #update stock's data when timer goes off
+    def periodicDataUpdate(self):
+        #do something with locks maybe?
+        if self.hasUpdatedLastMinute:
+            self.initHistoricData()
+        else:
+            self.initHistoricData()
+
+
 if __name__ == '__main__':
     now = datetime.now(timezone.utc)
     d = timedelta(days=31)

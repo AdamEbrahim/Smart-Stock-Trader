@@ -1,6 +1,7 @@
 import pandas_market_calendars as mcal
 from datetime import datetime, timedelta, timezone
 import pandas
+import time
 
 
 #Check if market open at a specific dtObject time/date.
@@ -50,12 +51,30 @@ def isMarketOpenDay(dtObject):
         print("false2")
         return False
     
-    if arr[0].date().isoformat() != start:
+    if arr[0].date().isoformat() != start:  
         print("false")
         return False
     
     print("true")
     return True
+
+def waitForMinuteToStart():
+    now = datetime.now(timezone.utc)
+    d1 = timedelta(seconds=now.second, microseconds=now.microsecond)
+    d2 = timedelta(minutes=1)
+    nextMinute = now - d1 + d2
+
+    while True:
+        if datetime.now(timezone.utc) > nextMinute:
+            return
+        time.sleep(.5)
+
+    # nextMinuteRounded = datetime(years = nextMinuteActual.year,
+    #                              month = nextMinuteActual.month,
+    #                              day = nextMinuteActual.day,
+    #                              hour = nextMinuteActual.)
+    
+
 
 
 if __name__ == '__main__':
