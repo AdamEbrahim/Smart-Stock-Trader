@@ -6,6 +6,10 @@ from alpaca.data.enums import DataFeed
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from datetime import datetime
 
+from alpaca.trading.client import TradingClient
+from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest
+from alpaca.trading.enums import OrderSide, TimeInForce
+
 from multiStockView import multiStockView
 from stockObject import stockObject
 
@@ -54,4 +58,29 @@ def historicalTesting(api_key, secret_key):
     print(regularBars)
     print("regular bars 2:")
     print(regularBars2)
+
+#isPaper = true if want paper trades, isMarketOrder = true if market order and false if limit order 
+#if paper, make sure passed in api_key and secret_key are for paper, otherwise make sure they are for live
+def executeTrade(api_key, secret_key, isPaper, isMarketOrder):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+
+    order_data = 0
+    if isMarketOrder:
+        order_data = MarketOrderRequest(
+                     symbol="SPY",
+                     qty=0.023,
+                     side=OrderSide.BUY,
+                     time_in_force=TimeInForce.DAY
+                     )
+    else:
+        order_data = LimitOrderRequest(
+                     symbol="BTC/USD",
+                     limit_price=17000,
+                     notional=4000,
+                     side=OrderSide.SELL,
+                     time_in_force=TimeInForce.FOK
+                     )
+        
+    order = trading_client.submit_order(order_data)
+
 

@@ -128,6 +128,8 @@ class stockObject:
             #i = i + interval
             i = i + 1
 
+        #if self.timeInterval == TimeFrameUnit.Minute
+
         self.dataLock.release()
 
         print(self.data)

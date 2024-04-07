@@ -63,13 +63,18 @@ if __name__ == '__main__':
 
     #setupWebsocket(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "SPY")
 
-    stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
+    # stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
+    # currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Week)
+    # stockList.addStock(currStock)
+
     # alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
     # print(stockList.stocks)
 
     #alpacaAPI.historicalTesting(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'])
 
     #currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Day)
+
+    alpacaAPI.executeTrade(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, True)
 
 
 
