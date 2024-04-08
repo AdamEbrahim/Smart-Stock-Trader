@@ -7,8 +7,11 @@ from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 from datetime import datetime
 
 from alpaca.trading.client import TradingClient
-from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest
-from alpaca.trading.enums import OrderSide, TimeInForce
+from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest, GetAssetsRequest
+from alpaca.trading.enums import OrderSide, TimeInForce, AssetClass
+from alpaca.trading.models import TradeAccount
+
+from alpaca.common.exceptions import APIError
 
 from multiStockView import multiStockView
 from stockObject import stockObject
@@ -59,28 +62,175 @@ def historicalTesting(api_key, secret_key):
     print("regular bars 2:")
     print(regularBars2)
 
-#isPaper = true if want paper trades, isMarketOrder = true if market order and false if limit order 
+#used to determine if you have enough of a stock to sell since no shorting. return -1 if false, 0 if true
+def enoughToSellQty(trading_client, stockSymbol, quantity):
+    
+    positions = trading_client.get_all_positions()
+    print(positions)
+
+    found = False
+    for position in positions:
+        if position.symbol == stockSymbol:
+            if position.qty_available < quantity: #not sure if need to use qty_available or qty
+                print("not enough of stock to sell the given quantity with no shorting")
+                return -1
+            
+            found = True
+            break
+
+    if not found:
+        print("stock to sell not found, cannot execute sale without shorting")
+        return -1
+    
+    return 0
+
+#used to determine if you have enough of a stock to sell since no shorting. return -1 if false, 0 if true
+def enoughToSellVal(trading_client, stockSymbol, dollarValue):
+    
+    positions = trading_client.get_all_positions()
+    print(positions)
+
+    found = False
+    for position in positions:
+        if position.symbol == stockSymbol:
+            if position.market_value < dollarValue:
+                print("not enough of stock to sell the given quantity with no shorting")
+                return -1
+            
+            found = True
+            break
+
+    if not found:
+        print("stock to sell not found, cannot execute sale without shorting")
+        return -1
+    
+    return 0
+
+#execute a market trade (buy or sell) based on a quantity of stocks to buy or sell
+#isPaper = true if want paper trades, orderSide is an OrderSide enum for buy or sell (OrderSide.BUY or OrderSide.SELL)
 #if paper, make sure passed in api_key and secret_key are for paper, otherwise make sure they are for live
-def executeTrade(api_key, secret_key, isPaper, isMarketOrder):
+def executeTradeMarketQty(api_key, secret_key, isPaper, stockSymbol, orderSide, quantity):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+    
+    #used to determine if you have enough of a stock to sell since no shorting
+    if orderSide == OrderSide.SELL:
+        if enoughToSellQty(trading_client, stockSymbol, quantity) == -1:
+            return
+
+    order_data = MarketOrderRequest(
+                    symbol=stockSymbol,
+                    qty=quantity,
+                    side=orderSide,
+                    time_in_force=TimeInForce.DAY
+                    )
+    
+    #below checks to make sure you have sufficient buying power for buys, and makes sure nothing goes wrong for sells
+    order = 0
+    try: #format of api_error is "raise APIError(error, http_error)"
+        order = trading_client.submit_order(order_data)
+    except APIError as err:
+        x = err.args
+        print("there was an error: ")
+        print(x)
+
+
+#execute a market trade (buy or sell) based on the dollar value of stocks to buy or sell
+#isPaper = true if want paper trades, orderSide is an OrderSide enum for buy or sell (OrderSide.BUY or OrderSide.SELL)
+#if paper, make sure passed in api_key and secret_key are for paper, otherwise make sure they are for live
+def executeTradeMarketValue(api_key, secret_key, isPaper, stockSymbol, orderSide, dollarValue):
     trading_client = TradingClient(api_key, secret_key, paper=isPaper)
 
-    order_data = 0
-    if isMarketOrder:
-        order_data = MarketOrderRequest(
-                     symbol="SPY",
-                     qty=0.023,
-                     side=OrderSide.BUY,
-                     time_in_force=TimeInForce.DAY
-                     )
-    else:
-        order_data = LimitOrderRequest(
-                     symbol="BTC/USD",
-                     limit_price=17000,
-                     notional=4000,
-                     side=OrderSide.SELL,
-                     time_in_force=TimeInForce.FOK
-                     )
+    #used to determine if you have enough of a stock to sell since no shorting
+    if orderSide == OrderSide.SELL:
+        if enoughToSellVal(trading_client, stockSymbol, dollarValue) == -1:
+            return
+
+    order_data = MarketOrderRequest(
+                    symbol=stockSymbol,
+                    notional=dollarValue,
+                    side=orderSide,
+                    time_in_force=TimeInForce.DAY
+                    )
         
-    order = trading_client.submit_order(order_data)
+    order = 0
+    try: #format of api_error is "raise APIError(error, http_error)"
+        order = trading_client.submit_order(order_data)
+    except APIError as err:
+        x = err.args
+        print("there was an error: ")
+        print(x)
+
+
+#execute a limit trade (buy or sell) based on a quantity of stocks to buy or sell
+#isPaper = true if want paper trades, orderSide is an OrderSide enum for buy or sell (OrderSide.BUY or OrderSide.SELL)
+#limit = limit price
+#if paper, make sure passed in api_key and secret_key are for paper, otherwise make sure they are for live
+def executeTradeLimitQty(api_key, secret_key, isPaper, stockSymbol, orderSide, quantity, limit):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+
+    #used to determine if you have enough of a stock to sell since no shorting
+    if orderSide == OrderSide.SELL:
+        if enoughToSellQty(trading_client, stockSymbol, quantity) == -1:
+            return
+
+    order_data = LimitOrderRequest(
+                    symbol=stockSymbol,
+                    limit_price=limit,
+                    qty=quantity,
+                    side=orderSide,
+                    time_in_force=TimeInForce.DAY
+                    )
+        
+    order = 0
+    try: #format of api_error is "raise APIError(error, http_error)"
+        order = trading_client.submit_order(order_data)
+    except APIError as err:
+        x = err.args
+        print("there was an error: ")
+        print(x)
+
+
+#execute a limit trade (buy or sell) based on the dollar value of stocks to buy or sell
+#isPaper = true if want paper trades, orderSide is an OrderSide enum for buy or sell (OrderSide.BUY or OrderSide.SELL)
+#limit = limit price
+#if paper, make sure passed in api_key and secret_key are for paper, otherwise make sure they are for live
+def executeTradeLimitValue(api_key, secret_key, isPaper, stockSymbol, orderSide, dollarValue, limit):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+
+    #used to determine if you have enough of a stock to sell since no shorting
+    if orderSide == OrderSide.SELL:
+        if enoughToSellVal(trading_client, stockSymbol, dollarValue) == -1:
+            return
+
+    order_data = LimitOrderRequest(
+                    symbol=stockSymbol,
+                    limit_price=limit,
+                    notional=dollarValue,
+                    side=orderSide,
+                    time_in_force=TimeInForce.DAY
+                    )
+        
+    order = 0
+    try: #format of api_error is "raise APIError(error, http_error)"
+        order = trading_client.submit_order(order_data)
+    except APIError as err:
+        x = err.args
+        print("there was an error: ")
+        print(x)
+
+
+def getAccountDetails(api_key, secret_key, isPaper):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+
+    account = trading_client.get_account()
+
+
+def getAssets(api_key, secret_key, isPaper):
+    trading_client = TradingClient(api_key, secret_key, paper=isPaper)
+
+    search_params = GetAssetsRequest(asset_class=AssetClass.CRYPTO)
+
+    assets = trading_client.get_all_assets(search_params)
+
 
 

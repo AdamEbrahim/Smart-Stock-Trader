@@ -1,6 +1,7 @@
 import alpacaAPI
 from alpaca.data.live import StockDataStream
 from alpaca.data.timeframe import TimeFrameUnit
+from alpaca.trading.enums import OrderSide, TimeInForce
 import yaml
 import threading
 import asyncio
@@ -74,7 +75,10 @@ if __name__ == '__main__':
 
     #currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Day)
 
-    alpacaAPI.executeTrade(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, True)
+    alpacaAPI.executeTradeMarketQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.SELL, 3.2)
+    # alpacaAPI.executeTradeMarketValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 145.35)
+    # alpacaAPI.executeTradeLimitQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 2.75, 140.3)
+    # alpacaAPI.executeTradeLimitValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 185.6, 140.75)
 
 
 
