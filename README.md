@@ -1,10 +1,7 @@
 # Smart-Stock-Trader
 Standalone device that you can place on your desk to interact with the stock market and your trading portfolio in real time
 
-
-To install the required dependencies run: 
-pip install -r requirements.txt
-
+## Installation
 Whisper also requires the command-line tool ffmpeg to be installed on your system, which is available from most package managers:
 
 # on Ubuntu or Debian
@@ -37,3 +34,10 @@ pip install pyaudio
 
 # on GNU/Linux (Inlcudes Raspberry Pi):
 sudo apt-get install python3-pyaudio
+sudo apt-get install python3-dev
+sudo apt-get install portaudio19-dev
+pip install pyaudio
+
+
+After completing the above, to install the required dependencies run: 
+pip install -r requirements.txt
