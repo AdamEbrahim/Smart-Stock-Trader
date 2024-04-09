@@ -64,9 +64,9 @@ if __name__ == '__main__':
 
     #setupWebsocket(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "SPY")
 
-    # stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
-    # currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Week)
-    # stockList.addStock(currStock)
+    stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
+    currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Week)
+    stockList.addStock(currStock)
 
     # alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
     # print(stockList.stocks)
@@ -75,11 +75,13 @@ if __name__ == '__main__':
 
     #currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Day)
 
-    alpacaAPI.executeTradeMarketQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.SELL, 3.2)
+    # alpacaAPI.executeTradeMarketQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.SELL, 3.2)
     # alpacaAPI.executeTradeMarketValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 145.35)
     # alpacaAPI.executeTradeLimitQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 2.75, 140.3)
     # alpacaAPI.executeTradeLimitValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 185.6, 140.75)
 
 
-
+    #--CANNOT LET MAIN THREAD DIE OR ELSE THERE ARE ERRORS WITH SUBMITTING THREADPOOL TASKS--#
+    while True:
+        time.sleep(1)
 

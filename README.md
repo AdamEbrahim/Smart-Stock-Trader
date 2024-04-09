@@ -2,10 +2,11 @@
 Standalone device that you can place on your desk to interact with the stock market and your trading portfolio in real time
 
 
-Run “pip install -r requirements.txt” to install the required libraries
-The speech recognition tool used in this project, openai/whisper, requires the following additional tools to be installed:
+To install the required dependencies run: 
+pip install -r requirements.txt
 
-1. ffmpeg:
+Whisper also requires the command-line tool ffmpeg to be installed on your system, which is available from most package managers:
+
 # on Ubuntu or Debian
 sudo apt update && sudo apt install ffmpeg
 
@@ -21,5 +22,18 @@ choco install ffmpeg
 # on Windows using Scoop (https://scoop.sh/)
 scoop install ffmpeg
 
-2. Rust (only if errors while pip installing openai-whisper):
-Follow this link: https://www.rust-lang.org/learn/get-started
+
+If there are errors while pip installing openai-whisper or tiktoken, Whisper may also require Rust. To install, follow this link: https://www.rust-lang.org/learn/get-started
+
+
+The real-time speech recognition software also requires pyaudio to be installed on your system:
+
+# on Windows:
+pip install pyaudio
+
+# on MacOS:
+brew install portaudio
+pip install pyaudio
+
+# on GNU/Linux (Inlcudes Raspberry Pi):
+sudo apt-get install python3-pyaudio

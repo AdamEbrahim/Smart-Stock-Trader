@@ -8,6 +8,8 @@ import concurrent.futures
 from alpaca.data.live import StockDataStream
 import time
 
+import voiceControl
+
 class multiStockView:
 
     def __init__(self, api_key, secret_key, size, timerInterval):
@@ -27,6 +29,8 @@ class multiStockView:
 
         #new thread for handling websocket connection for incoming live data for stocks
         threading.Thread(target=self.setupWebsocket).start()
+
+        threading.Thread(target=voiceControl.main).start()
 
 
     #data will be in trade format
