@@ -11,40 +11,12 @@ import concurrent.futures
 from multiStockView import multiStockView
 from stockObject import stockObject
 
-#todo: acquire and release lock of stock object when changing queue
-async def trade_data_handler1(data):
-    print("trade 1")
-    print(data)
-    return
-
-
-#symbols = list of string symbols of stocks
-def setupWebsocket(api_key, secret_key, symbols):
-    print(api_key)
-
-    global websocket_client1
-    websocket_client1 = StockDataStream(api_key, secret_key)
-    websocket_client1.subscribe_trades(trade_data_handler1, *symbols)
-    websocket_client1.run()
-    # print("hi")
-
-def websocketSwitchHandler(stockList):
-    while True:
-        for stock in stockList:
-            websocket_client1.subscribe_trades(trade_data_handler1, stock)
-            time.sleep(5)
-
-
-        
-
 
 if __name__ == '__main__':
 
     #obtain API keys and secret keys from config file
     with open('config.yml', 'r') as file:
         keys = yaml.safe_load(file)
-
-    stockList = ["AAPL", "SPY"]
 
     #executor = concurrent.futures.ThreadPoolExecutor(max_workers=2)
     #executor.submit(setupWebsocket, keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList)
@@ -82,6 +54,8 @@ if __name__ == '__main__':
 
 
     #--CANNOT LET MAIN THREAD DIE OR ELSE THERE ARE ERRORS WITH SUBMITTING THREADPOOL TASKS--#
+    currStock2 = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "GOOG", TimeFrameUnit.Week)
     while True:
-        time.sleep(1)
+        time.sleep(5)
+        stockList.addStock(currStock2)
 

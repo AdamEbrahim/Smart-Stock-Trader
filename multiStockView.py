@@ -33,25 +33,14 @@ class multiStockView:
         threading.Thread(target=voiceControl.main).start()
 
 
-    #data will be in trade format
-    async def websocketHandlerTrades(self, data):
-        print(data)
-        currStock = self.stocksDict[data.symbol]
-        
-        currStock.dataLock.acquire()
-        currStock.data[-1] = 1
-
-        currStock.dataLock.release()
-        return
-
-
     def updateWebsocketConnections(self):
-        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *self.stocksDict.keys())
+        print(list(self.stocksDict.keys()))
+        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
 
 
     def setupWebsocket(self):
         self.websocket_client = StockDataStream(self.api_key, self.secret_key)
-        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *self.stocksDict.keys())
+        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
         self.websocket_client.run()
 
 
@@ -83,6 +72,7 @@ class multiStockView:
         del self.stocks[i]
         del self.stocksDict[stockToRemoveSymbol]
 
+        self.updateWebsocketConnections()
         recalibrateView()
 
 
@@ -102,6 +92,7 @@ class multiStockView:
         del self.stocksDict[stockToReplaceSymbol]
         self.stocksDict[newStock.symbol] = newStock
         
+        self.updateWebsocketConnections()
         recalibrateView()
 
 
@@ -118,4 +109,19 @@ class multiStockView:
             removed = self.stocks.popleft()
             del self.stocksDict[removed.symbol]
 
+        self.updateWebsocketConnections()
         recalibrateView()
+
+
+    #data will be in trade format
+    async def websocketHandlerTrades(self, data):
+        print(data)
+
+        currStock = self.stocksDict[data.symbol]
+        
+        currStock.dataLock.acquire()
+        currStock.data[-1] = 1
+        print(currStock.symbol)
+
+        currStock.dataLock.release()
+        return
