@@ -40,6 +40,7 @@ class multiStockView:
         self.multiStockUI = self.initUI(parentUI, dim)
 
 
+    #TODOO: WEBSOCKET NOT UPDATING PROPERLY WHEN YOU REMOVE A STOCK
     def updateWebsocketConnections(self):
         print(list(self.stocksDict.keys()))
         self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
@@ -64,6 +65,15 @@ class multiStockView:
         self.timerHandle() #make sure to call the timer handle first because we have hit that minute mark
         self.timer.start() #start the repeating timer, destroys thread that called setupTimer
 
+
+    #This function is necessary becasue we have to separately destroy single stock widgets (they don't go away when we delete stock object)
+    #MUST CALL BEFORE DESTROYING STOCKOBJECT
+    #stockObj is an actual stockObject whose stockUI widget we want to destroy
+    def removeStockWidget(self, stockObj):
+        stockObj.stockUI.destroy()
+        del stockObj.stockUI
+
+
     #removes a stock given its symbol
     def removeStock(self, stockToRemoveSymbol):
         i = 0
@@ -76,6 +86,7 @@ class multiStockView:
             print("stock to remove is not a current stock")
             return
         
+        self.removeStockWidget(self.stocks[i]) #must remove stock widget before destroying stockObject
         del self.stocks[i]
         del self.stocksDict[stockToRemoveSymbol]
 
@@ -95,8 +106,14 @@ class multiStockView:
             print("stock to remove is not a current stock")
             return
         
+        temp = self.stocks[i]
+        self.removeStockWidget(temp) #must remove stock widget before destroying stockObject
+
         self.stocks[i] = newStock
+
+        del temp
         del self.stocksDict[stockToReplaceSymbol]
+
         self.stocksDict[newStock.symbol] = newStock
         
         self.updateWebsocketConnections()
@@ -114,12 +131,16 @@ class multiStockView:
 
         if len(self.stocks) > self.size:
             removed = self.stocks.popleft()
-            del self.stocksDict[removed.symbol]
+            symb = removed.symbol
+
+            self.removeStockWidget(removed) #must remove stock widget before destroying stockObject
+            del removed
+            del self.stocksDict[symb]
 
         self.updateWebsocketConnections()
         self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
-
+    #TODOO: WEBSOCKET NOT UPDATING PROPERLY WHEN YOU REMOVE A STOCK SO IT LOOKS UP THE KEY THAT WAS JUST REMOVED IN SELF.STOCKSDICT
     #data will be in trade format
     async def websocketHandlerTrades(self, data):
         print(data)

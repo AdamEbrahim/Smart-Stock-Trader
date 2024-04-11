@@ -28,8 +28,6 @@ class stockTrader:
         self.dim = dim
 
         self.UI = view(dim)
-        #thread to deal with the blocking UI stuff
-        #threading.Thread(target=self.UI.tk.mainloop).start()
 
         #create multiStockView object
         self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
@@ -45,11 +43,12 @@ class stockTrader:
 
 
     def handleVoiceCommand(self, command):
-        if command == "add" or command == "Add." or command == "Ad.":
+        cmd = command.casefold() #get lower case command (for case insensitive comparison)
+
+        if "add" in cmd:
             currStock = stockObject(self.api_key, self.secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
             self.stockList.addStock(currStock)
-        elif command == "remove" or command == "Remove." or command == "remove.":
-            print("hey")
+        elif "remove" in cmd:
             self.stockList.removeStock("AAPL")
             
 
