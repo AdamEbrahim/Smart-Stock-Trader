@@ -7,6 +7,16 @@ from collections import deque
 from datetime import datetime, timedelta, timezone
 from utilities import isMarketOpen, isMarketOpenDay
 
+#UI stuff
+import tkinter as tk
+
+import matplotlib
+matplotlib.use('agg')
+import matplotlib.animation as animation
+from matplotlib import style
+from matplotlib import pyplot as plt
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+
 class dataType(Enum):
     BAR = "Bar"
     TRADE = "Trade"
@@ -16,7 +26,7 @@ class dataType(Enum):
 class stockObject:
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit, "oneYear" for year interval, or "fiveYear" for five year interval
-    def __init__(self, api_key, secret_key, symbol, timeframeUnit):
+    def __init__(self, api_key, secret_key, symbol, timeframeUnit, parentUI):
         self.api_key = api_key
         self.secret_key = secret_key
         self.symbol = symbol
@@ -33,6 +43,9 @@ class stockObject:
         self.timeInterval = timeframeUnit
 
         self.hasUpdatedLastMinute = False
+
+        #stock tkinter UI object
+        self.stockUI = singleStockUI(parentUI)
 
         self.initHistoricData()
 
@@ -142,6 +155,28 @@ class stockObject:
             self.initHistoricData()
         else:
             self.initHistoricData()
+
+
+class singleStockUI(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent, bg='black')
+
+        self.fig = plt.figure()
+        self.stockPlot = self.fig.add_subplot(111)
+        self.stockPlot.plot([1,2], [2,3])
+
+        canvas = FigureCanvasTkAgg(self.fig, self)
+        canvas.draw()
+        canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+        # toolbar = NavigationToolbar2Tk( canvas, self )
+        # toolbar.update()
+        # canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+
+    #used to change contents of a stock on the stock view (like when changing the displayed stock)
+    def changeContents(self):
+        print("hi")
+
 
 
 if __name__ == '__main__':

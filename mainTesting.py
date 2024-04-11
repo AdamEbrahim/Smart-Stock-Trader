@@ -10,6 +10,7 @@ import concurrent.futures
 
 from multiStockView import multiStockView
 from stockObject import stockObject
+from stockTrader import stockTrader
 
 
 if __name__ == '__main__':
@@ -36,9 +37,9 @@ if __name__ == '__main__':
 
     #setupWebsocket(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "SPY")
 
-    stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
-    currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Week)
-    stockList.addStock(currStock)
+    # stockList = multiStockView(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], 4, 60)
+    # currStock = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "AAPL", TimeFrameUnit.Week)
+    # stockList.addStock(currStock)
 
     # alpacaAPI.getTopMovers(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], stockList, "gain")
     # print(stockList.stocks)
@@ -52,10 +53,11 @@ if __name__ == '__main__':
     # alpacaAPI.executeTradeLimitQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 2.75, 140.3)
     # alpacaAPI.executeTradeLimitValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 185.6, 140.75)
 
+    trader = stockTrader(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], True, (2,2))
 
     #--CANNOT LET MAIN THREAD DIE OR ELSE THERE ARE ERRORS WITH SUBMITTING THREADPOOL TASKS--#
-    currStock2 = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "GOOG", TimeFrameUnit.Week)
+    #currStock2 = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "GOOG", TimeFrameUnit.Week)
     while True:
         time.sleep(5)
-        stockList.addStock(currStock2)
+        #stockList.addStock(currStock2)
 

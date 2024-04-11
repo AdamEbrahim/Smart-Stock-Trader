@@ -1,6 +1,7 @@
 import threading
 from multiStockView import multiStockView
 from stockObject import stockObject
+from alpaca.data.timeframe import TimeFrameUnit
 
 #used for voice control:
 import argparse
@@ -14,19 +15,43 @@ from queue import Queue
 from time import sleep
 from sys import platform
 
+#ui stuff
+from view import view
+
 class stockTrader:
 
-    #paperTrading = true if paper trading session, false otherwise
-    def __init__(self, api_key, secret_key, paperTrading):
+    #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, 
+    def __init__(self, api_key, secret_key, paperTrading, dim):
         self.api_key = api_key
         self.secret_key = secret_key
         self.paperTradingSession = paperTrading
+        self.dim = dim
+
+        self.UI = view(dim)
+        #thread to deal with the blocking UI stuff
+        #threading.Thread(target=self.UI.tk.mainloop).start()
 
         #create multiStockView object
-        self.stockList = multiStockView(self.api_key, self.secret_key, 4, 60)
+        self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
+        #currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
+        # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
+        #self.stockList.addStock(currStock)
 
-        #set up thread for listening for voice commands
+        #set up thread for listening for voice commands and operating on them (kind of the "main thread" in a sense)
         threading.Thread(target=self.setupVoiceControl).start()
+
+        #this works, can only call mainloop with main thread i think
+        self.UI.tk.mainloop()
+
+
+    def handleVoiceCommand(self, command):
+        if command == "add" or command == "Add." or command == "Ad.":
+            currStock = stockObject(self.api_key, self.secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
+            self.stockList.addStock(currStock)
+        elif command == "remove" or command == "Remove." or command == "remove.":
+            print("hey")
+            self.stockList.removeStock("AAPL")
+            
 
 
     def setupVoiceControl(self):
@@ -138,13 +163,10 @@ class stockTrader:
                     else:
                         transcription[-1] = text
 
-                    # Clear the console to reprint the updated transcription.
-                    # os.system('cls' if os.name=='nt' else 'clear')
-                    # for line in transcription:
-                    #     print(line)
+
                     print(transcription[-1])
-                    # Flush stdout.
-                    # print('', end='', flush=True)
+                    self.handleVoiceCommand(transcription[-1])
+
                 else:
                     # Infinite loops are bad for processors, must sleep.
                     sleep(0.25)

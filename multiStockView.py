@@ -1,4 +1,3 @@
-from view import recalibrateView
 from constantTimer import constantTimer
 from collections import deque
 import threading
@@ -10,12 +9,17 @@ import time
 
 import voiceControl
 
-class multiStockView:
+#UI stuff
+import tkinter as tk
+from stockObject import singleStockUI
 
-    def __init__(self, api_key, secret_key, size, timerInterval):
+class multiStockView:
+    #dim = tuple (x,y)
+    def __init__(self, api_key, secret_key, timerInterval, parentUI, dim):
         self.api_key = api_key
         self.secret_key = secret_key
-        self.size = size #max number of stocks in view, determines grid layout (4 means 2x2)
+        self.dim = dim
+        self.size = dim[0] * dim[1] #max number of stocks in view
 
         self.stocks = deque() #queue of stocks (for ordering purposes)
         self.stocksDict = {} #dictionary of stocks (for fast lookup purposes). key = symbol, value = stock
@@ -30,7 +34,10 @@ class multiStockView:
         #new thread for handling websocket connection for incoming live data for stocks
         threading.Thread(target=self.setupWebsocket).start()
 
-        threading.Thread(target=voiceControl.main).start()
+        #threading.Thread(target=voiceControl.main).start()
+
+        #UI object (allStockView Frame)
+        self.multiStockUI = self.initUI(parentUI, dim)
 
 
     def updateWebsocketConnections(self):
@@ -73,7 +80,7 @@ class multiStockView:
         del self.stocksDict[stockToRemoveSymbol]
 
         self.updateWebsocketConnections()
-        recalibrateView()
+        self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
 
     #replaces a stock given its symbol
@@ -93,7 +100,7 @@ class multiStockView:
         self.stocksDict[newStock.symbol] = newStock
         
         self.updateWebsocketConnections()
-        recalibrateView()
+        self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
 
     #adds a stock, newStock is a stockObject
@@ -110,7 +117,7 @@ class multiStockView:
             del self.stocksDict[removed.symbol]
 
         self.updateWebsocketConnections()
-        recalibrateView()
+        self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
 
     #data will be in trade format
@@ -125,3 +132,35 @@ class multiStockView:
 
         currStock.dataLock.release()
         return
+    
+    #returns the allStockView UI object
+    def initUI(self, parentUI, dim):
+        ui = allStockView(parentUI.mainFrame, parentUI, dim)
+        ui.grid(row=0, column=0, sticky="nsew")
+        parentUI.allPages["allStocks"] = ui
+
+        return ui
+
+
+    
+
+#supports different types of allStockViews, like top x movers, a view of x select stocks, top x stocks from your portfolio
+class allStockView(tk.Frame):
+    def __init__(self, parent, controller, dim):
+        tk.Frame.__init__(self, parent, bg='black')
+        # button = tk.Button(self, text="Visit trade view",
+        #                     command=lambda: controller.showPage("tradeView"))
+        # button.pack()
+
+    #stocks is the stocks deque of the multiStockView parent object, where each stock contain singleStockUI Frames
+    def recalibrateView(self, dim, stocks):
+
+        for i in range(dim[0]):
+            for j in range(dim[1]):
+
+                index = i*dim[1] + j
+                if index >= len(stocks):
+                    return
+
+                currStockUI = stocks[index].stockUI
+                currStockUI.grid(row=i, column=j, sticky="nsew", padx=(20, 20), pady=(20, 20))
