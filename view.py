@@ -10,6 +10,8 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolb
 from multiStockView import multiStockView
 from stockObject import stockObject
 
+from sys import platform
+
 #called to update a stock figure when new data comes in
 def animate(fig):
     print("hi")
@@ -77,7 +79,12 @@ class view():
     def __init__(self, dim):
         self.tk = tk.Tk()
         self.tk.configure(bg='black')
-        self.tk.state('zoomed')
+
+        if platform == "linux": #If Linux (Raspberry Pi): 
+            self.tk.attributes('-zoomed', True)
+        elif platform == "darwin" or platform == "win32": #If Windows or MacOS:
+            self.tk.state('zoomed') 
+        
         #self.tk.bind("<Return>", self.hi)
 
         self.mainFrame = tk.Frame(self.tk, bg='black')
