@@ -17,6 +17,8 @@ from matplotlib import style
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
+style.use("ggplot")
+
 class dataType(Enum):
     BAR = "Bar"
     TRADE = "Trade"
@@ -44,10 +46,10 @@ class stockObject:
 
         self.hasUpdatedLastMinute = False
 
-        #stock tkinter UI object
-        self.stockUI = singleStockUI(parentUI)
-
         self.initHistoricData()
+
+        #stock tkinter UI object
+        self.stockUI = singleStockUI(parentUI, self.data)
 
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit
@@ -158,12 +160,16 @@ class stockObject:
 
 
 class singleStockUI(tk.Frame):
-    def __init__(self, parent):
+    def __init__(self, parent, data):
         tk.Frame.__init__(self, parent, bg='black')
+
+        #get values to plot from data
+        timeToPlot = [sub["timestamp"] for sub in data]
+        valsToPlot = [sub["open"] for sub in data]
 
         self.fig = plt.figure()
         self.stockPlot = self.fig.add_subplot(111)
-        self.stockPlot.plot([1,2], [2,3])
+        self.stockPlot.plot(timeToPlot, valsToPlot)
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
@@ -174,8 +180,19 @@ class singleStockUI(tk.Frame):
         # canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
     #used to change contents of a stock on the stock view (like when changing the displayed stock)
-    def changeContents(self):
+    #data is a queue containing the data of the stock
+    def changeContents(self, data):
         print("hi")
+        timeToPlot = [sub["timestamp"] for sub in data]
+        valsToPlot = [sub["open"] for sub in data]
+
+        self.stockPlot.clear()
+
+        self.stockPlot.plot(timeToPlot, valsToPlot)
+
+        self.fig.canvas.draw()
+
+
 
 
 

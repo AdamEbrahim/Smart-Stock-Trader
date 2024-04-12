@@ -31,9 +31,9 @@ class stockTrader:
 
         #create multiStockView object
         self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
-        #currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
-        #self.stockList.addStock(currStock)
+        self.stockList.addStock(currStock)
 
         #set up thread for listening for voice commands and operating on them (kind of the "main thread" in a sense)
         threading.Thread(target=self.setupVoiceControl).start()
@@ -44,6 +44,7 @@ class stockTrader:
 
     def handleVoiceCommand(self, command):
         cmd = command.casefold() #get lower case command (for case insensitive comparison)
+        self.stockList.stocks[0].stockUI.changeContents(self.stockList.stocks[0].data)
 
         if "add" in cmd:
             currStock = stockObject(self.api_key, self.secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
