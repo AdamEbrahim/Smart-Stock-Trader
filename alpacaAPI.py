@@ -27,12 +27,12 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
     if gainOrLoss == "loss":
         market_losers = market_movers.losers
         for i in range(currentStockList.size):
-            currStock = stockObject(market_losers[i].symbol)
+            currStock = stockObject(api_key, secret_key, market_losers[i].symbol, TimeFrameUnit.Week, currentStockList.multiStockUI) #default timeframe of week
             currentStockList.addStock(currStock)
     else:
         market_gainers = market_movers.gainers
         for i in range(currentStockList.size):
-            currStock = stockObject(market_gainers[i].symbol)
+            currStock = stockObject(api_key, secret_key, market_gainers[i].symbol, TimeFrameUnit.Week, currentStockList.multiStockUI) #default timeframe of week
             currentStockList.addStock(currStock)
 
     return

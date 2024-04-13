@@ -58,6 +58,8 @@ class stockObject:
         print("changed time interval")
         self.initHistoricData()
 
+        self.stockUI.changeContents(self.data) #make sure to show updated data in stock UI plot
+
 
     def initHistoricData(self):
         client = StockHistoricalDataClient(self.api_key, self.secret_key)
@@ -152,7 +154,7 @@ class stockObject:
 
     #update stock's data when timer goes off
     def periodicDataUpdate(self):
-        #do something with locks maybe?
+        #do something with locks maybe, also currStock.stockUI.changeContents(currStock.data)
         if self.hasUpdatedLastMinute:
             self.initHistoricData()
         else:

@@ -96,6 +96,10 @@ class multiStockView:
 
     #replaces a stock given its symbol
     def replaceStock(self, stockToReplaceSymbol, newStock):
+        if self.stocksDict.get(newStock.symbol) != None:
+            print("Stock you are trying to replace another stock with is already present. Please remove it first.")
+            return
+        
         i = 0
         for currStock in self.stocks:
             if currStock.symbol == stockToReplaceSymbol:
@@ -103,7 +107,7 @@ class multiStockView:
             i = i+1
 
         if i == len(self.stocks):
-            print("stock to remove is not a current stock")
+            print("stock to replace is not a current stock")
             return
         
         temp = self.stocks[i]
@@ -152,6 +156,10 @@ class multiStockView:
         print(currStock.symbol)
 
         currStock.dataLock.release()
+
+        #show updated data in stock UI plot
+        currStock.stockUI.changeContents(currStock.data)
+
         return
     
     #returns the allStockView UI object

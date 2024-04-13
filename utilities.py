@@ -3,6 +3,10 @@ from datetime import datetime, timedelta, timezone
 import pandas
 import time
 
+from alpaca.data.historical import StockHistoricalDataClient
+from alpaca.data.requests import StockLatestQuoteRequest
+from alpaca.common.exceptions import APIError
+
 
 #Check if market open at a specific dtObject time/date.
 #return true or false
@@ -74,6 +78,17 @@ def waitForMinuteToStart():
     #                              day = nextMinuteActual.day,
     #                              hour = nextMinuteActual.)
     
+
+#check if valid stock name by checking if there is a latest quote for it
+def checkValidStock(api_key, secret_key, symbol):
+    client = StockHistoricalDataClient(api_key, secret_key)
+    request = StockLatestQuoteRequest(symbol_or_symbols=symbol)
+
+    try:
+        res = client.get_stock_latest_quote(request)
+        return True
+    except APIError as err:
+        return False
 
 
 
