@@ -5,7 +5,7 @@ from alpaca.data.requests import MarketMoversRequest, StockLatestQuoteRequest, S
 import threading
 from collections import deque
 from datetime import datetime, timedelta, timezone
-from utilities import isMarketOpen, isMarketOpenDay
+from utilities import isMarketOpen, isMarketOpenDay, getLastClose
 
 #UI stuff
 import tkinter as tk
@@ -17,7 +17,7 @@ from matplotlib import style
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 
-style.use("ggplot")
+#style.use("ggplot")
 
 class dataType(Enum):
     BAR = "Bar"
@@ -66,6 +66,10 @@ class stockObject:
         requiredTimeFrame = 0
         requiredStart = 0
         now = datetime.now(timezone.utc)
+
+        #if market closed right now, get last close to use as the end time of retrieving historical data
+        if not isMarketOpen(now):
+            now = getLastClose(now)
 
         match self.timeInterval:
             case TimeFrameUnit.Minute: #live data feed
@@ -137,9 +141,9 @@ class stockObject:
         i = 0
         while i < len(barData):
             print(i)
-            self.data.append({"close": barData[int(i)].close,
-                              "high": barData[int(i)].high,
-                              "low": barData[int(i)].low,
+            self.data.append({#"close": barData[int(i)].close,
+                              #"high": barData[int(i)].high,
+                              #"low": barData[int(i)].low,
                               "open": barData[int(i)].open,
                               "timestamp": barData[int(i)].timestamp})
             #i = i + interval
@@ -154,11 +158,13 @@ class stockObject:
 
     #update stock's data when timer goes off
     def periodicDataUpdate(self):
-        #do something with locks maybe, also currStock.stockUI.changeContents(currStock.data)
-        if self.hasUpdatedLastMinute:
-            self.initHistoricData()
-        else:
-            self.initHistoricData()
+        #if market isnt open, no point in periodic data updates
+        if isMarketOpen(datetime.now(timezone.utc)):
+            #do something with locks maybe, also currStock.stockUI.changeContents(currStock.data)
+            if self.hasUpdatedLastMinute:
+                self.initHistoricData()
+            else:
+                self.initHistoricData() #cant do this because it will overwrite websocket updates becasue of 15 minute delay
 
 
 class singleStockUI(tk.Frame):
@@ -170,11 +176,28 @@ class singleStockUI(tk.Frame):
         valsToPlot = [sub["open"] for sub in data]
 
         self.fig = plt.figure()
+        self.fig.tight_layout()
+        self.fig.set_facecolor("none")
+
         self.stockPlot = self.fig.add_subplot(111)
-        self.stockPlot.plot(timeToPlot, valsToPlot)
+        self.stockPlot.spines['top'].set_visible(False)
+        self.stockPlot.spines['right'].set_visible(False)
+        self.stockPlot.spines['bottom'].set_visible(False)
+        self.stockPlot.spines['left'].set_visible(False)
+        self.stockPlot.set_facecolor("none")
+        #self.stockPlot.xaxis.label.set_color('white')
+        self.stockPlot.tick_params(axis='x', colors='white')
+        #self.stockPlot.yaxis.label.set_color('white')
+        self.stockPlot.tick_params(axis='y', colors='white')
+
+
+        self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
+        self.stockPlot.margins(x=0)
+        self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
+        canvas.get_tk_widget().config(bg='black')
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
 
         # toolbar = NavigationToolbar2Tk( canvas, self )
@@ -190,7 +213,9 @@ class singleStockUI(tk.Frame):
 
         self.stockPlot.clear()
 
-        self.stockPlot.plot(timeToPlot, valsToPlot)
+        self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
+        self.stockPlot.margins(x=0)
+        self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
 
         self.fig.canvas.draw()
 

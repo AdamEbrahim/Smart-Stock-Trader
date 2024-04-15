@@ -37,7 +37,7 @@ class stockTrader:
 
         #create multiStockView object
         self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
-        currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Week, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList.multiStockUI)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
         self.stockList.addStock(currStock)
 

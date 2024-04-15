@@ -152,7 +152,8 @@ class multiStockView:
         currStock = self.stocksDict[data.symbol]
         
         currStock.dataLock.acquire()
-        currStock.data[-1] = 1
+        currStock.data[-1]["open"] = data.price
+        currStock.data[-1]["timestamp"] = data.timestamp
         print(currStock.symbol)
 
         currStock.dataLock.release()
