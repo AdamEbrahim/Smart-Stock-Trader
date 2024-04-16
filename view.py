@@ -81,7 +81,8 @@ class view():
         self.tk.configure(bg='black')
 
         if platform == "linux": #If Linux (Raspberry Pi): 
-            self.tk.attributes('-zoomed', True)
+            #self.tk.attributes('-zoomed', True)
+            print("h")
         elif platform == "darwin" or platform == "win32": #If Windows or MacOS:
             self.tk.state('zoomed') 
         
