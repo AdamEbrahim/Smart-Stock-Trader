@@ -16,6 +16,7 @@ import matplotlib.animation as animation
 from matplotlib import style
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
+from matplotlib.figure import Figure
 
 #style.use("ggplot")
 
@@ -169,7 +170,10 @@ class stockObject:
 
 class singleStockUI(tk.Frame):
     def __init__(self, parent, data):
-        tk.Frame.__init__(self, parent, bg='black')
+        tk.Frame.__init__(self, parent, bg='red')
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
 
         #get values to plot from data
         timeToPlot = [sub["timestamp"] for sub in data]
@@ -182,8 +186,11 @@ class singleStockUI(tk.Frame):
         self.stockPlot = self.fig.add_subplot(111)
         self.stockPlot.spines['top'].set_visible(False)
         self.stockPlot.spines['right'].set_visible(False)
-        self.stockPlot.spines['bottom'].set_visible(False)
-        self.stockPlot.spines['left'].set_visible(False)
+        #self.stockPlot.spines['bottom'].set_visible(False)
+        #self.stockPlot.spines['left'].set_visible(False)
+        self.stockPlot.spines['bottom'].set_color('white')
+        self.stockPlot.spines['left'].set_color('white')
+
         self.stockPlot.set_facecolor("none")
         #self.stockPlot.xaxis.label.set_color('white')
         self.stockPlot.tick_params(axis='x', colors='white')
@@ -191,14 +198,27 @@ class singleStockUI(tk.Frame):
         self.stockPlot.tick_params(axis='y', colors='white')
 
 
-        self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
+        #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
         canvas.get_tk_widget().config(bg='black')
+
+        self.testF = tk.Frame(self, bg='red')
+        self.testF.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1)
+
+        self.priceLbl = tk.Label(self.testF, text="Price:", font=('Helvetica', '24', "bold"), fg="white", bg="blue", anchor=tk.W, padx=40)
+        self.priceLbl2 = tk.Label(self.testF, text="Price2:", font=('Helvetica', '24', "bold"), fg="white", bg="blue", anchor=tk.W, padx=40)
+        #now geometrically place them (pack or grid). 
+        #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
+        self.priceLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1, padx=(10,10))
+        self.priceLbl2.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1, padx=(10,10))
+        #self.priceLbl.grid(row=1, column=0, sticky="nsew")
+
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
+        #canvas.get_tk_widget().grid(row=0, column=0, sticky="nsew")
 
         # toolbar = NavigationToolbar2Tk( canvas, self )
         # toolbar.update()
@@ -213,7 +233,7 @@ class singleStockUI(tk.Frame):
 
         self.stockPlot.clear()
 
-        self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
+        #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
 

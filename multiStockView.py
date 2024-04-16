@@ -178,6 +178,10 @@ class multiStockView:
 class allStockView(tk.Frame):
     def __init__(self, parent, controller, dim):
         tk.Frame.__init__(self, parent, bg='black')
+        self.grid_rowconfigure(0, weight=1)
+        self.grid_rowconfigure(1, weight=1)
+        self.grid_columnconfigure(0, weight=1)
+        self.grid_columnconfigure(1, weight=1)
         # button = tk.Button(self, text="Visit trade view",
         #                     command=lambda: controller.showPage("tradeView"))
         # button.pack()

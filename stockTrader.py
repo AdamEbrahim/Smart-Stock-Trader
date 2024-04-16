@@ -40,6 +40,10 @@ class stockTrader:
         currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList.multiStockUI)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
         self.stockList.addStock(currStock)
+        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        self.stockList.addStock(currStock)
+        currStock = stockObject(api_key, secret_key, "MSFT", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        self.stockList.addStock(currStock)
 
         #set up thread for listening for voice commands and operating on them (kind of the "main thread" in a sense)
         threading.Thread(target=self.setupVoiceControl).start()
@@ -117,14 +121,14 @@ class stockTrader:
             #execute the first level command based on stock name for view commands (not change timeframe)
             match self.prevCommands[0]:
                 case "add":
-                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Week, self.stockList.multiStockUI)
+                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
                     self.stockList.addStock(currStock)
                     self.prevCommands.clear() #make sure to reset prevCommands
                 case "remove":
                     self.stockList.removeStock(stockName)
                     self.prevCommands.clear() #make sure to reset prevCommands
                 case "replace":
-                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Week, self.stockList.multiStockUI)
+                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
                     self.stockList.replaceStock(self.prevCommands[1], currStock)
                     self.prevCommands.clear() #make sure to reset prevCommands
                     
