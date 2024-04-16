@@ -93,6 +93,10 @@ class view():
         self.mainFrame.grid_rowconfigure(0, weight=1) #give grid rowIndex 0 full weight (take up full screen)
         self.mainFrame.grid_columnconfigure(0, weight=1) #give grid colIndex 0 full weight (take up full screen)
 
+        # Bind the ESC key with the callback function to destroy window (entire tkinter gui)
+        #buggy on macOS, should work fine on linux/windows
+        self.tk.bind('<Escape>', lambda e: self.closeWin(e))
+
 
         self.allPages = {} #each page is a frame
 
@@ -108,6 +112,9 @@ class view():
     def showPage(self, page):
         frameToShow = self.allPages[page]
         frameToShow.tkraise()
+
+    def closeWin(self, e):
+        self.tk.destroy() #buggy on macOS, should work fine on linux/windows
         
 
 if __name__ == '__main__':
