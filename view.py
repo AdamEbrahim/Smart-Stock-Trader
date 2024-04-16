@@ -75,13 +75,25 @@ class tradeView(tk.Frame):
 
 
 class view():
-    #dim = tuple of what the allStockView grid dimensions will be
-    def __init__(self, dim):
+    #dim = tuple of what the allStockView grid dimensions will be, res = resolution (only linux), gui_setup_time (only raspberry pi)
+    def __init__(self, dim, res, gui_setup_time):
         self.tk = tk.Tk()
         self.tk.configure(bg='black')
 
+        self.res = res #doesnt matter except for linux
+        self.state = True
+
         if platform == "linux": #If Linux (Raspberry Pi): 
             #self.tk.attributes('-zoomed', True)
+            #self.tk.geometry('800x480+100+100')
+
+            #ISSUE: RASPBERRY PI LINUX IS BUGGY AND FULLSCREEN ONLY WORKS SOMETIMES ON INITIALIZATION
+            #THIS ENSURES AFTER SOME SETUP TIME (SECONDS * 1000 = MILLISECONDS) FULLSCREEN GETS TURNED ON 
+            self.tk.after(gui_setup_time * 1000, lambda: self.tk.wm_attributes('-fullscreen', 'true'))
+
+            self.tk.attributes('-fullscreen', True)
+            #self.tk.geometry('800x480')
+            self.tk.bind('<Return>', lambda e: self.toggleWin(e)) #bind return key with toggling fullscreen window, only on linux right now
             print("h")
         elif platform == "darwin" or platform == "win32": #If Windows or MacOS:
             self.tk.state('zoomed') 
@@ -113,8 +125,16 @@ class view():
         frameToShow = self.allPages[page]
         frameToShow.tkraise()
 
-    def closeWin(self, e):
+    def closeWin(self, event=None):
         self.tk.destroy() #buggy on macOS, should work fine on linux/windows
+
+    #toggle window fullscreen on return key, only for linux because of fullscreen issues not allowing you to see toolbar
+    def toggleWin(self, event=None):
+        self.state = not self.state
+        self.tk.attributes('-fullscreen', self.state)
+        print(self.res) #very buggy on raspberry pi; further testing needed
+        self.tk.geometry('200x200') #very buggy on rasbperry pi; further testing needed
+
         
 
 if __name__ == '__main__':

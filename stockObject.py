@@ -170,7 +170,7 @@ class stockObject:
 
 class singleStockUI(tk.Frame):
     def __init__(self, parent, data):
-        tk.Frame.__init__(self, parent, bg='red')
+        tk.Frame.__init__(self, parent, bg='black')
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
         self.grid_columnconfigure(0, weight=1)
@@ -206,15 +206,10 @@ class singleStockUI(tk.Frame):
         canvas.draw()
         canvas.get_tk_widget().config(bg='black')
 
-        self.testF = tk.Frame(self, bg='red')
-        self.testF.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1)
-
-        self.priceLbl = tk.Label(self.testF, text="Price:", font=('Helvetica', '24', "bold"), fg="white", bg="blue", anchor=tk.W, padx=40)
-        self.priceLbl2 = tk.Label(self.testF, text="Price2:", font=('Helvetica', '24', "bold"), fg="white", bg="blue", anchor=tk.W, padx=40)
+        self.priceLbl = tk.Label(self, text="Price:", font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
         #now geometrically place them (pack or grid). 
         #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
-        self.priceLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1, padx=(10,10))
-        self.priceLbl2.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1, padx=(10,10))
+        self.priceLbl.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(10,0))
         #self.priceLbl.grid(row=1, column=0, sticky="nsew")
 
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)

@@ -23,17 +23,18 @@ from view import view
 
 class stockTrader:
 
-    #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, 
-    def __init__(self, api_key, secret_key, paperTrading, dim):
+    #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, res = monitor resolution
+    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time):
         self.api_key = api_key
         self.secret_key = secret_key
         self.paperTradingSession = paperTrading
         self.dim = dim
+        self.res = res
 
         #used for voice control, Only necessary for leveled commands
         self.prevCommands = []
 
-        self.UI = view(dim)
+        self.UI = view(dim, res, gui_setup_time)
 
         #create multiStockView object
         self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
@@ -56,6 +57,9 @@ class stockTrader:
 
     def handleVoiceCommand(self, command):
         #self.stockList.stocks[0].stockUI.changeContents(self.stockList.stocks[0].data)
+        if command == "":
+            print("faulty voice command (recorded nothing)")
+            return
 
         #have received first level command
         if len(self.prevCommands) > 0:
@@ -91,6 +95,9 @@ class stockTrader:
                     timeInterval = "oneYear"
                 elif "max" in lowercmd: #MAX IS HOW YOU GET 5 YEAR COMMAND
                     timeInterval = "fiveYear"
+                else:
+                    print("unable to recognize timeframe, please repeat it again")
+                    return 
 
 
                 obj = self.stockList.stocksDict.get(self.prevCommands[1])
@@ -137,7 +144,7 @@ class stockTrader:
         #BELOW ONLY EXECUTED IF WE HAVEN'T RECEIVED A FIRST LEVEL COMMAND
         cmd = command.casefold() #get lower case command (for case insensitive comparison)
         #1st level commands: view specific stocks
-        if "add" in cmd:
+        if "addition" in cmd:
             self.prevCommands.append("add")
 
         elif "remove" in cmd:
