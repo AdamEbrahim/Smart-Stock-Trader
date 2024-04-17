@@ -2,6 +2,7 @@ import threading
 from multiStockView import multiStockView
 from stockObject import stockObject
 from alpaca.data.timeframe import TimeFrameUnit
+from alpaca.trading.enums import OrderSide
 import alpacaAPI
 from utilities import checkValidStock
 
@@ -147,8 +148,81 @@ class stockTrader:
             print("stock to change timeframe of is not a current stock")
 
 
-    def handleTrade(self, command):
+    def handleMarketOrder(self, command):
         print(command)
+        end1 = self.getNextWordIndex(0, command)
+        if end1 >= len(command):
+            print("error: invalid attempt at market order command v2")
+            return
+        
+        purchaseOrSale = command[0:end1 - 1]
+
+        end2 = self.getNextWordIndex(end1, command)
+        if end2 >= len(command):
+            print("error: invalid attempt at market order command v2")
+            return
+        
+        qtyOrVal = command[end1:end2 - 1]
+
+        end3 = self.getNextWordIndex(end2, command)
+        if end3 >= len(command):
+            print("error: invalid attempt at market order command v2")
+            return
+        
+        number = command[end2:end3 - 1]
+        number = self.parseQuantity(number) #remove number punctuation except decimal points
+        print(number)
+
+        end4 = self.getNextWordIndex(end3, command)
+        stockCmd = 0
+        if end4 < len(command):
+            stockCmd = command[end3:end4 - 1]
+        else:
+            stockCmd = command[end3:]
+
+        stockName = self.checkValidStockWrapper(stockCmd)
+        if stockName == 0: #invalid stock name
+            return
+        
+        purchaseOrSale = purchaseOrSale.casefold()
+        if "purchase" in purchaseOrSale:
+            purchaseOrSale = OrderSide.BUY
+        elif "sale" in purchaseOrSale:
+            purchaseOrSale = OrderSide.SELL
+        else:
+            print("invalid buy or sell on market order")
+            return
+
+        qtyOrVal = qtyOrVal.casefold()
+        try:
+            if "quantity" in qtyOrVal:
+                alpacaAPI.executeTradeMarketQty(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number)
+            elif "value" in qtyOrVal:
+                alpacaAPI.executeTradeMarketValue(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number)
+            else:
+                print("invalid quantity or value on market order")
+
+        except Exception as err:
+            print("error in trying to execute market trade")
+            x = err.args
+            print(x)
+
+
+    def handleLimitOrder(self, command):
+        print(command)
+        end = self.getNextWordIndex(0, command)
+        if end >= len(command):
+            print("error: invalid attempt at limit order command v2")
+            return
+        
+        stockCmd = command[0:end - 1]
+
+        stockName1 = self.checkValidStockWrapper(stockCmd)
+        if stockName1 == 0: #invalid stock name
+            return
+        
+        command = command[end:] #now only rest of trade info should remain
+
 
     def checkValidStockWrapper(self, command):
         #remove punctuation from stock name if any
@@ -172,6 +246,19 @@ class stockTrader:
             start = start + 1
 
         return start
+    
+    def parseQuantity(self, a):
+        new_str = ""
+        number_list = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+        for i in range(len(a)):
+            if a[i] not in string.punctuation:
+                new_str = new_str + a[i]
+            else:
+                if a[i] == '.' and ((i + 1) < len(a)):
+                    if a[i+1] in number_list:
+                        new_str = new_str + a[i]
+
+        return new_str
 
 
     #refactored voice control based on handling all parts of a command in one sentence/capture
@@ -186,7 +273,8 @@ class stockTrader:
         removeCmd = "remove"
         replaceCmd = "replace"
         timeFrameCmd = "time frame"
-        tradeCmd = "trade"
+        marketCmd = "market"
+        limitCmd = "limit"
 
         if addCmd in cmd:
             start = cmd.find(addCmd) + len(addCmd) #find end index of first occurrence of the command
@@ -228,16 +316,27 @@ class stockTrader:
     
             command = command[start:] #substring of all chars from "start" to end of string
             self.handleTimeFrame(command)
-        elif tradeCmd in cmd:
-            start = cmd.find(tradeCmd) + len(tradeCmd) #find end index of first occurrence of the command
+        elif marketCmd in cmd:
+            start = cmd.find(marketCmd) + len(marketCmd) #find end index of first occurrence of the command
             start = self.getNextWordIndex(start, command)
             
             if start >= len(command):
-                print("error: invalid attempt at trade command")
+                print("error: invalid attempt at market order command")
                 return
     
             command = command[start:] #substring of all chars from "start" to end of string
-            self.handleTrade(command)
+            self.handleMarketOrder(command)
+        elif limitCmd in cmd:
+            start = cmd.find(limitCmd) + len(limitCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
+            
+            if start >= len(command):
+                print("error: invalid attempt at limit order command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleLimitOrder(command)
+        
 
         #below commands can be executed immediately    
         elif "view portfolio" in cmd:
@@ -494,3 +593,4 @@ class stockTrader:
         print("\n\nTranscription:")
         for line in transcription:
             print(line)
+
