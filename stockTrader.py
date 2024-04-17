@@ -210,19 +210,84 @@ class stockTrader:
 
     def handleLimitOrder(self, command):
         print(command)
-        end = self.getNextWordIndex(0, command)
-        if end >= len(command):
+        end1 = self.getNextWordIndex(0, command)
+        if end1 >= len(command):
             print("error: invalid attempt at limit order command v2")
             return
         
-        stockCmd = command[0:end - 1]
+        purchaseOrSale = command[0:end1 - 1]
 
-        stockName1 = self.checkValidStockWrapper(stockCmd)
-        if stockName1 == 0: #invalid stock name
+        end2 = self.getNextWordIndex(end1, command)
+        if end2 >= len(command):
+            print("error: invalid attempt at limit order command v2")
             return
         
-        command = command[end:] #now only rest of trade info should remain
+        qtyOrVal = command[end1:end2 - 1]
 
+        end3 = self.getNextWordIndex(end2, command)
+        if end3 >= len(command):
+            print("error: invalid attempt at limit order command v2")
+            return
+        
+        number = command[end2:end3 - 1]
+        number = self.parseQuantity(number) #remove number punctuation except decimal points
+        print(number)
+
+
+        end4 = self.getNextWordIndex(end3, command)
+        if end4 >= len(command):
+            print("error: invalid attempt at limit order command v2")
+            return
+
+        limit = command[end3:end4 - 1]
+        limit = limit.casefold()
+        if not ("limit" in limit):
+            print("error: no limit provided")
+
+
+        end5 = self.getNextWordIndex(end4, command)
+        if end5 >= len(command):
+            print("error: invalid attempt at limit order command v2")
+            return
+
+        limitNumber = command[end4:end5 - 1]
+        limitNumber = self.parseQuantity(limitNumber) #remove number punctuation except decimal points
+        print(limitNumber)
+
+
+        end6 = self.getNextWordIndex(end5, command)
+        stockCmd = 0
+        if end6 < len(command):
+            stockCmd = command[end5:end6 - 1]
+        else:
+            stockCmd = command[end5:]
+
+        stockName = self.checkValidStockWrapper(stockCmd)
+        if stockName == 0: #invalid stock name
+            return
+        
+        purchaseOrSale = purchaseOrSale.casefold()
+        if "purchase" in purchaseOrSale:
+            purchaseOrSale = OrderSide.BUY
+        elif "sale" in purchaseOrSale:
+            purchaseOrSale = OrderSide.SELL
+        else:
+            print("invalid buy or sell on limit order")
+            return
+
+        qtyOrVal = qtyOrVal.casefold()
+        try:
+            if "quantity" in qtyOrVal:
+                alpacaAPI.executeTradeLimitQty(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number, limitNumber)
+            elif "value" in qtyOrVal:
+                alpacaAPI.executeTradeLimitValue(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number, limitNumber)
+            else:
+                print("invalid quantity or value on limit order")
+
+        except Exception as err:
+            print("error in trying to execute limit trade")
+            x = err.args
+            print(x)
 
     def checkValidStockWrapper(self, command):
         #remove punctuation from stock name if any
