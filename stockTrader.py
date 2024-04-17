@@ -52,126 +52,324 @@ class stockTrader:
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
 
-    
+    #specific voice command handling functions
+    #command is raw command (no casefolding) with all words prior to and including the high level command ("add") removed
+    def handleAdd(self, command):
+        print(command)
+        end = self.getNextWordIndex(0, command)
+        if end < len(command):
+            command = command[0:end - 1]
+
+        stockName = self.checkValidStockWrapper(command)
+        if stockName == 0: #invalid stock name
+            return
+        
+        currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
+        self.stockList.addStock(currStock)
+
+    def handleRemove(self, command):
+        print(command)
+        end = self.getNextWordIndex(0, command)
+        if end < len(command):
+            command = command[0:end - 1]
+
+        stockName = self.checkValidStockWrapper(command)
+        if stockName == 0: #invalid stock name
+            return
+        
+        self.stockList.removeStock(stockName)
+
+    def handleReplace(self, command):
+        print(command)
+        end = self.getNextWordIndex(0, command)
+        if end >= len(command):
+            print("error: invalid attempt at replace command v2")
+            return
+        
+        stockCmd = command[0:end - 1]
+
+        stockName1 = self.checkValidStockWrapper(stockCmd)
+        if stockName1 == 0: #invalid stock name
+            return
+        
+        command = command[end:] #now only last stock name should remain
+
+        end = self.getNextWordIndex(0, command)
+        if end < len(command):
+            command = command[0:end - 1]
+
+        stockName2 = self.checkValidStockWrapper(command)
+        if stockName2 == 0: #invalid stock name
+            return
+
+        currStock = stockObject(self.api_key, self.secret_key, stockName2, TimeFrameUnit.Day, self.stockList.multiStockUI)
+        self.stockList.replaceStock(stockName1, currStock)
+
+    def handleTimeFrame(self, command):
+        print(command)
+        end = self.getNextWordIndex(0, command)
+        if end >= len(command):
+            print("error: invalid attempt at timeframe command v2")
+            return
+        
+        stockCmd = command[0:end - 1]
+
+        stockName1 = self.checkValidStockWrapper(stockCmd)
+        if stockName1 == 0: #invalid stock name
+            return
+        
+        command = command[end:] #now only timeframe should remain
+        lowercmd = command.casefold()
+
+        timeInterval = 0
+        if "minute" in lowercmd:
+            timeInterval = TimeFrameUnit.Minute
+        elif "hour" in lowercmd:
+            timeInterval = TimeFrameUnit.Hour
+        elif "day" in lowercmd:
+            timeInterval = TimeFrameUnit.Day
+        elif "week" in lowercmd:
+            timeInterval = TimeFrameUnit.Week
+        elif "month" in lowercmd:
+            timeInterval = TimeFrameUnit.Month
+        elif "year" in lowercmd:
+            timeInterval = "oneYear"
+        elif "max" in lowercmd: #MAX IS HOW YOU GET 5 YEAR COMMAND
+            timeInterval = "fiveYear"
+        else:
+            print("unable to recognize timeframe, please repeat it again")
+            return 
+
+        obj = self.stockList.stocksDict.get(stockName1)
+        if obj != None:
+            obj.changeTimeInterval(timeInterval)
+        else:
+            print("stock to change timeframe of is not a current stock")
 
 
-    def handleVoiceCommand(self, command):
-        #self.stockList.stocks[0].stockUI.changeContents(self.stockList.stocks[0].data)
+    def handleTrade(self, command):
+        print(command)
+
+    def checkValidStockWrapper(self, command):
+        #remove punctuation from stock name if any
+        stockName = command.translate(str.maketrans('', '', string.punctuation))
+        stockName = stockName.upper() #stock names should be upper case
+        print(stockName)
+
+        #make sure it is a valid stock name
+        if not checkValidStock(self.api_key, self.secret_key, stockName):
+            print("invalid stock name")
+            return 0
+        
+        return stockName
+
+
+    def getNextWordIndex(self, start, command):
+        while start < len(command): #account for punctuation + selfcontaining words
+            if command[start] == " ":
+                start = start + 1 #get index of char after space (next word)
+                break
+            start = start + 1
+
+        return start
+
+
+    #refactored voice control based on handling all parts of a command in one sentence/capture
+    def handleVoiceCommandV2(self, command):
         if command == "":
             print("faulty voice command (recorded nothing)")
             return
-
-        #have received first level command
-        if len(self.prevCommands) > 0:
-            #can break out of any command sequence using keyword "exit"
-            lowercmd = command.casefold()
-            if "exit" in lowercmd:
-                self.prevCommands.clear() #clear list of cmds
-                return
-            
-            stockName = 0
-
-            #first level command is for trading and have gotten stock name to trade
-            if self.prevCommands[0] == "trade" and len(self.prevCommands) > 1:
-                print("hi")
-
-                self.prevCommands.clear() #clear list of cmds
-                return
-            
-            #first level command is for changing timeframe and have gotten stock name
-            elif self.prevCommands[0] == "timeframe" and len(self.prevCommands) > 1:
-                timeInterval = 0
-                if "minute" in lowercmd:
-                    timeInterval = TimeFrameUnit.Minute
-                elif "hour" in lowercmd:
-                    timeInterval = TimeFrameUnit.Hour
-                elif "day" in lowercmd:
-                    timeInterval = TimeFrameUnit.Day
-                elif "week" in lowercmd:
-                    timeInterval = TimeFrameUnit.Week
-                elif "month" in lowercmd:
-                    timeInterval = TimeFrameUnit.Month
-                elif "year" in lowercmd:
-                    timeInterval = "oneYear"
-                elif "max" in lowercmd: #MAX IS HOW YOU GET 5 YEAR COMMAND
-                    timeInterval = "fiveYear"
-                else:
-                    print("unable to recognize timeframe, please repeat it again")
-                    return 
-
-
-                obj = self.stockList.stocksDict.get(self.prevCommands[1])
-                if obj != None:
-                    obj.changeTimeInterval(timeInterval)
-                else:
-                    print("stock to change timeframe of is not a current stock")
-
-                self.prevCommands.clear() #clear list of cmds
-                return
-
-
-            #remove punctuation from stock name if any
-            stockName = command.translate(str.maketrans('', '', string.punctuation))
-            stockName = stockName.upper() #stock names should be upper case
-            print(stockName)
-
-            #make sure it is a valid stock name
-            if not checkValidStock(self.api_key, self.secret_key, stockName):
-                print("invalid stock name")
-                return
-            
-            #replace, timeframe, trade all require a stock name after first command
-            if len(self.prevCommands) == 1 and (self.prevCommands[0] == "replace" or self.prevCommands[0] == "timeframe" or self.prevCommands[0] == "trade"):
-                self.prevCommands.append(stockName)
-                return
-
-            #execute the first level command based on stock name for view commands (not change timeframe)
-            match self.prevCommands[0]:
-                case "add":
-                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
-                    self.stockList.addStock(currStock)
-                    self.prevCommands.clear() #make sure to reset prevCommands
-                case "remove":
-                    self.stockList.removeStock(stockName)
-                    self.prevCommands.clear() #make sure to reset prevCommands
-                case "replace":
-                    currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
-                    self.stockList.replaceStock(self.prevCommands[1], currStock)
-                    self.prevCommands.clear() #make sure to reset prevCommands
-                    
-            return
-
-        #BELOW ONLY EXECUTED IF WE HAVEN'T RECEIVED A FIRST LEVEL COMMAND
+        
         cmd = command.casefold() #get lower case command (for case insensitive comparison)
-        #1st level commands: view specific stocks
-        if "addition" in cmd:
-            self.prevCommands.append("add")
 
-        elif "remove" in cmd:
-            self.prevCommands.append("remove")
+        addCmd = "add"
+        removeCmd = "remove"
+        replaceCmd = "replace"
+        timeFrameCmd = "time frame"
+        tradeCmd = "trade"
 
-        elif "replace" in cmd:
-            self.prevCommands.append("replace")
+        if addCmd in cmd:
+            start = cmd.find(addCmd) + len(addCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
 
-        #1st level command: change timeframe
-        if "time frame" in cmd:
-            self.prevCommands.append("timeframe")
+            if start >= len(command):
+                print("error: invalid attempt at add command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleAdd(command)
+        elif removeCmd in cmd:
+            start = cmd.find(removeCmd) + len(removeCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
+            
+            if start >= len(command):
+                print("error: invalid attempt at remove command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleRemove(command)
+        elif replaceCmd in cmd:
+            start = cmd.find(replaceCmd) + len(replaceCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
+            
+            if start >= len(command):
+                print("error: invalid attempt at replace command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleReplace(command)
+        elif timeFrameCmd in cmd:
+            start = cmd.find(timeFrameCmd) + len(timeFrameCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
+            
+            if start >= len(command):
+                print("error: invalid attempt at timeframe command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleTimeFrame(command)
+        elif tradeCmd in cmd:
+            start = cmd.find(tradeCmd) + len(tradeCmd) #find end index of first occurrence of the command
+            start = self.getNextWordIndex(start, command)
+            
+            if start >= len(command):
+                print("error: invalid attempt at trade command")
+                return
+    
+            command = command[start:] #substring of all chars from "start" to end of string
+            self.handleTrade(command)
 
-        #1st level commands: trade stocks
-        elif "trade" in cmd:
-            self.prevCommands.append("trade")
-
-
-        #just view individual portfolio, no need for leveled commands
+        #below commands can be executed immediately    
         elif "view portfolio" in cmd:
             print("hi")
 
-        #view top movers (gainers or losers), no need for leveled commands
         elif "top movers" in cmd:
             if "gain" in cmd:
                 alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "gain")
             elif "loss" in cmd or "lose" in cmd:
                 alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "loss")
+
+        
+
+
+
+    # def handleVoiceCommand(self, command):
+    #     #self.stockList.stocks[0].stockUI.changeContents(self.stockList.stocks[0].data)
+    #     if command == "":
+    #         print("faulty voice command (recorded nothing)")
+    #         return
+
+    #     #have received first level command
+    #     if len(self.prevCommands) > 0:
+    #         #can break out of any command sequence using keyword "exit"
+    #         lowercmd = command.casefold()
+    #         if "exit" in lowercmd:
+    #             self.prevCommands.clear() #clear list of cmds
+    #             return
+            
+    #         stockName = 0
+
+    #         #first level command is for trading and have gotten stock name to trade
+    #         if self.prevCommands[0] == "trade" and len(self.prevCommands) > 1:
+    #             print("hi")
+
+    #             self.prevCommands.clear() #clear list of cmds
+    #             return
+            
+    #         #first level command is for changing timeframe and have gotten stock name
+    #         elif self.prevCommands[0] == "timeframe" and len(self.prevCommands) > 1:
+    #             timeInterval = 0
+    #             if "minute" in lowercmd:
+    #                 timeInterval = TimeFrameUnit.Minute
+    #             elif "hour" in lowercmd:
+    #                 timeInterval = TimeFrameUnit.Hour
+    #             elif "day" in lowercmd:
+    #                 timeInterval = TimeFrameUnit.Day
+    #             elif "week" in lowercmd:
+    #                 timeInterval = TimeFrameUnit.Week
+    #             elif "month" in lowercmd:
+    #                 timeInterval = TimeFrameUnit.Month
+    #             elif "year" in lowercmd:
+    #                 timeInterval = "oneYear"
+    #             elif "max" in lowercmd: #MAX IS HOW YOU GET 5 YEAR COMMAND
+    #                 timeInterval = "fiveYear"
+    #             else:
+    #                 print("unable to recognize timeframe, please repeat it again")
+    #                 return 
+
+
+    #             obj = self.stockList.stocksDict.get(self.prevCommands[1])
+    #             if obj != None:
+    #                 obj.changeTimeInterval(timeInterval)
+    #             else:
+    #                 print("stock to change timeframe of is not a current stock")
+
+    #             self.prevCommands.clear() #clear list of cmds
+    #             return
+
+
+    #         #remove punctuation from stock name if any
+    #         stockName = command.translate(str.maketrans('', '', string.punctuation))
+    #         stockName = stockName.upper() #stock names should be upper case
+    #         print(stockName)
+
+    #         #make sure it is a valid stock name
+    #         if not checkValidStock(self.api_key, self.secret_key, stockName):
+    #             print("invalid stock name")
+    #             return
+            
+    #         #replace, timeframe, trade all require a stock name after first command
+    #         if len(self.prevCommands) == 1 and (self.prevCommands[0] == "replace" or self.prevCommands[0] == "timeframe" or self.prevCommands[0] == "trade"):
+    #             self.prevCommands.append(stockName)
+    #             return
+
+    #         #execute the first level command based on stock name for view commands (not change timeframe)
+    #         match self.prevCommands[0]:
+    #             case "add":
+    #                 currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
+    #                 self.stockList.addStock(currStock)
+    #                 self.prevCommands.clear() #make sure to reset prevCommands
+    #             case "remove":
+    #                 self.stockList.removeStock(stockName)
+    #                 self.prevCommands.clear() #make sure to reset prevCommands
+    #             case "replace":
+    #                 currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
+    #                 self.stockList.replaceStock(self.prevCommands[1], currStock)
+    #                 self.prevCommands.clear() #make sure to reset prevCommands
+                    
+    #         return
+
+    #     #BELOW ONLY EXECUTED IF WE HAVEN'T RECEIVED A FIRST LEVEL COMMAND
+    #     cmd = command.casefold() #get lower case command (for case insensitive comparison)
+    #     #1st level commands: view specific stocks
+    #     if "addition" in cmd:
+    #         self.prevCommands.append("add")
+
+    #     elif "remove" in cmd:
+    #         self.prevCommands.append("remove")
+
+    #     elif "replace" in cmd:
+    #         self.prevCommands.append("replace")
+
+    #     #1st level command: change timeframe
+    #     if "time frame" in cmd:
+    #         self.prevCommands.append("timeframe")
+
+    #     #1st level commands: trade stocks
+    #     elif "trade" in cmd:
+    #         self.prevCommands.append("trade")
+
+
+    #     #just view individual portfolio, no need for leveled commands
+    #     elif "view portfolio" in cmd:
+    #         print("hi")
+
+    #     #view top movers (gainers or losers), no need for leveled commands
+    #     elif "top movers" in cmd:
+    #         if "gain" in cmd:
+    #             alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "gain")
+    #         elif "loss" in cmd or "lose" in cmd:
+    #             alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "loss")
     
             
 
@@ -184,7 +382,7 @@ class stockTrader:
                             help="Don't use the english model.")
         parser.add_argument("--energy_threshold", default=1000,
                             help="Energy level for mic to detect.", type=int)
-        parser.add_argument("--record_timeout", default=2,
+        parser.add_argument("--record_timeout", default=6,
                             help="How real time the recording is in seconds.", type=float)
         parser.add_argument("--phrase_timeout", default=3,
                             help="How much empty space between recordings before we "
@@ -286,7 +484,7 @@ class stockTrader:
 
 
                     print(transcription[-1])
-                    self.handleVoiceCommand(transcription[-1])
+                    self.handleVoiceCommandV2(transcription[-1])
 
                 else:
                     sleep(0.25)
