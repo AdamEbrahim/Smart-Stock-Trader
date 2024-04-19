@@ -142,7 +142,7 @@ class stockObject:
         i = 0
         while i < len(barData):
             print(i)
-            self.data.append({#"close": barData[int(i)].close,
+            self.data.append({"close": barData[int(i)].close,
                               #"high": barData[int(i)].high,
                               #"low": barData[int(i)].low,
                               "open": barData[int(i)].open,

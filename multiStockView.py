@@ -40,10 +40,9 @@ class multiStockView:
         self.multiStockUI = self.initUI(parentUI, dim)
 
 
-    #TODOO: WEBSOCKET NOT UPDATING PROPERLY WHEN YOU REMOVE A STOCK
-    def updateWebsocketConnections(self):
-        print(list(self.stocksDict.keys()))
-        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
+    # def updateWebsocketConnections(self):
+    #     print(list(self.stocksDict.keys()))
+    #     self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
 
 
     def setupWebsocket(self):
@@ -86,11 +85,11 @@ class multiStockView:
             print("stock to remove is not a current stock")
             return
         
+        self.websocket_client.unsubscribe_trades(stockToRemoveSymbol)
+        del self.stocksDict[stockToRemoveSymbol]
         self.removeStockWidget(self.stocks[i]) #must remove stock widget before destroying stockObject
         del self.stocks[i]
-        del self.stocksDict[stockToRemoveSymbol]
 
-        self.updateWebsocketConnections()
         self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
 
@@ -115,12 +114,12 @@ class multiStockView:
 
         self.stocks[i] = newStock
 
+        self.websocket_client.unsubscribe_trades(stockToReplaceSymbol)
         del temp
         del self.stocksDict[stockToReplaceSymbol]
 
         self.stocksDict[newStock.symbol] = newStock
         
-        self.updateWebsocketConnections()
         self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
 
@@ -132,24 +131,27 @@ class multiStockView:
         
         self.stocks.append(newStock)
         self.stocksDict[newStock.symbol] = newStock
+        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, newStock.symbol)
 
         if len(self.stocks) > self.size:
             removed = self.stocks.popleft()
             symb = removed.symbol
 
             self.removeStockWidget(removed) #must remove stock widget before destroying stockObject
+            self.websocket_client.unsubscribe_trades(symb)
             del removed
             del self.stocksDict[symb]
 
-        self.updateWebsocketConnections()
         self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
-    #TODOO: WEBSOCKET NOT UPDATING PROPERLY WHEN YOU REMOVE A STOCK SO IT LOOKS UP THE KEY THAT WAS JUST REMOVED IN SELF.STOCKSDICT
     #data will be in trade format
     async def websocketHandlerTrades(self, data):
         print(data)
 
-        currStock = self.stocksDict[data.symbol]
+        currStock = self.stocksDict.get(data.symbol)
+        if currStock == None: #hasn't unsubsribed from a stock that should be removed yet
+            print("received websocket data from stock that should have been removed")
+            return
         
         currStock.dataLock.acquire()
         currStock.data[-1]["open"] = data.price

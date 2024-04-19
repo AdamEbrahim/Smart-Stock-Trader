@@ -16,6 +16,7 @@ import string
 
 from datetime import datetime, timedelta, timezone
 from queue import Queue
+import time
 from time import sleep
 from sys import platform
 
@@ -42,7 +43,7 @@ class stockTrader:
         currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList.multiStockUI)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
         self.stockList.addStock(currStock)
-        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Week, self.stockList.multiStockUI)
         self.stockList.addStock(currStock)
         currStock = stockObject(api_key, secret_key, "MSFT", TimeFrameUnit.Day, self.stockList.multiStockUI)
         self.stockList.addStock(currStock)
@@ -50,8 +51,18 @@ class stockTrader:
         #set up thread for listening for voice commands and operating on them (kind of the "main thread" in a sense)
         threading.Thread(target=self.setupVoiceControl).start()
 
+        #threading.Thread(target=self.test).start()
+
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
+
+    # def test(self):
+    #     time.sleep(20)
+    #     print("yuh")
+    #     self.stockList.removeStock("MSFT")
+    #     time.sleep(20)
+    #     print("yuh2")
+    #     self.stockList.addStock(stockObject(self.api_key, self.secret_key, "AMD", TimeFrameUnit.Day, self.stockList.multiStockUI))
 
     #specific voice command handling functions
     #command is raw command (no casefolding) with all words prior to and including the high level command ("add") removed
