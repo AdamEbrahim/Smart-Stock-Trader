@@ -27,15 +27,29 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
     if gainOrLoss == "loss":
         market_losers = market_movers.losers
         for i in range(currentStockList.size):
-            currStock = stockObject(api_key, secret_key, market_losers[i].symbol, TimeFrameUnit.Week, currentStockList.multiStockUI) #default timeframe of week
+            currStock = stockObject(api_key, secret_key, market_losers[i].symbol, TimeFrameUnit.Day, currentStockList.multiStockUI) #default timeframe of day
             currentStockList.addStock(currStock)
     else:
         market_gainers = market_movers.gainers
         for i in range(currentStockList.size):
-            currStock = stockObject(api_key, secret_key, market_gainers[i].symbol, TimeFrameUnit.Week, currentStockList.multiStockUI) #default timeframe of week
+            currStock = stockObject(api_key, secret_key, market_gainers[i].symbol, TimeFrameUnit.Day, currentStockList.multiStockUI) #default timeframe of day
             currentStockList.addStock(currStock)
 
     return
+
+def getPortfolio(api_key, secret_key, currentStockList):
+    client = TradingClient(api_key, secret_key)
+    positions = client.get_all_positions()
+
+    #remove currently displayed stocks
+    toRemove = list(currentStockList.stocksDict.keys())
+
+    for i in range(len(toRemove)):
+        currentStockList.removeStock(toRemove[i])
+
+    for i in range(len(positions)): #if own more stocks that max view size will only show the last 4 because of how addStocks works
+        currStock = stockObject(api_key, secret_key, positions[i].symbol, TimeFrameUnit.Day, currentStockList.multiStockUI) #default timeframe of day
+        currentStockList.addStock(currStock)
 
 # im gonna get the bar data minute wise to do historical data
 def historicalTesting(api_key, secret_key):

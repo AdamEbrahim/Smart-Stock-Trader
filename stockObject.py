@@ -50,7 +50,7 @@ class stockObject:
         self.initHistoricData()
 
         #stock tkinter UI object
-        self.stockUI = singleStockUI(parentUI, self.data)
+        self.stockUI = singleStockUI(parentUI, self.data, self.symbol)
 
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit
@@ -67,14 +67,16 @@ class stockObject:
         requiredTimeFrame = 0
         requiredStart = 0
         now = datetime.now(timezone.utc)
+        marketUp = isMarketOpen(now)
 
         #if market closed right now, get last close to use as the end time of retrieving historical data
-        if not isMarketOpen(now):
+        if not marketUp:
             now = getLastClose(now)
 
         match self.timeInterval:
             case TimeFrameUnit.Minute: #live data feed
                 print("Minute")
+                return #no init historical data, all will come from websocket
 
             case TimeFrameUnit.Hour: #show last 1 hour (maybe 3?)
                 print("Hour")
@@ -122,7 +124,7 @@ class stockObject:
                 requiredTimeFrame = TimeFrame.Week
         
 
-        print(requiredStart)
+        #print(requiredStart)
         #endtime defaults to now
         barsRequest = StockBarsRequest(symbol_or_symbols=self.symbol, timeframe=requiredTimeFrame, start=requiredStart)
         bars = client.get_stock_bars(barsRequest)
@@ -136,22 +138,30 @@ class stockObject:
         # interval = (1.0 * (len(barData) - 1)) / (self.maxDataPoints - 1)
 
         self.dataLock.acquire()
-        print("hi")
+
         self.data.clear()
 
         i = 0
         while i < len(barData):
-            print(i)
-            self.data.append({"close": barData[int(i)].close,
-                              #"high": barData[int(i)].high,
-                              #"low": barData[int(i)].low,
-                              "open": barData[int(i)].open,
-                              "timestamp": barData[int(i)].timestamp})
-            #i = i + interval
+            if self.timeInterval == TimeFrameUnit.Month or self.timeInterval == "oneYear" or self.timeInterval == "fiveYear":
+                self.data.append({"price": barData[int(i)].close,
+                                "timestamp": barData[int(i)].timestamp})
+                
+            else: #hour, day, week
+                if marketUp:
+                    self.data.append({"price": barData[int(i)].open,
+                                    "timestamp": barData[int(i)].timestamp})
+                    if i == len(barData) - 1: #add extra data point to queue for trades coming in from websocket
+                        lastPrice = self.data[-1]["price"]
+                        self.data.append({"price": lastPrice,
+                                        "timestamp": datetime.timestamp(now)})
+                else: #market not open, no websocket updates, reinit history to get new "after hours" trading data
+                    self.data.append({"price": barData[int(i)].close,
+                                    "timestamp": barData[int(i)].timestamp})
+
             i = i + 1
 
-        #if self.timeInterval == TimeFrameUnit.Minute
-
+        
         self.dataLock.release()
 
         print(self.data)
@@ -161,7 +171,20 @@ class stockObject:
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
         if isMarketOpen(datetime.now(timezone.utc)):
-            #do something with locks maybe, also currStock.stockUI.changeContents(currStock.data)
+            #do something with lock, also currStock.stockUI.changeContents(currStock.data). Push a new entry if necessary to data queue
+            # match self.timeInterval:
+            #     case TimeFrameUnit.Hour:
+
+            #     case TimeFrameUnit.Day:
+
+            #     case TimeFrameUnit.Week:
+
+            #     case TimeFrameUnit.Month:
+
+            #     case "oneYear":
+
+            #     case _:
+            
             if self.hasUpdatedLastMinute:
                 self.initHistoricData()
             else:
@@ -169,7 +192,7 @@ class stockObject:
 
 
 class singleStockUI(tk.Frame):
-    def __init__(self, parent, data):
+    def __init__(self, parent, data, symbol):
         tk.Frame.__init__(self, parent, bg='black')
         self.grid_rowconfigure(0, weight=1)
         self.grid_rowconfigure(1, weight=1)
@@ -177,7 +200,7 @@ class singleStockUI(tk.Frame):
 
         #get values to plot from data
         timeToPlot = [sub["timestamp"] for sub in data]
-        valsToPlot = [sub["open"] for sub in data]
+        valsToPlot = [sub["price"] for sub in data]
 
         self.fig = plt.figure()
         self.fig.tight_layout()
@@ -201,15 +224,28 @@ class singleStockUI(tk.Frame):
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
+        self.stockPlot.set_title(symbol, fontdict={'color': 'white'})
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
         canvas.get_tk_widget().config(bg='black')
 
-        self.priceLbl = tk.Label(self, text="Price:", font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
+        self.bottomFrame = tk.Frame(self, bg='black')
+
+        txtLbl = 0
+        if len(data) > 0:
+            txtLbl = "Price: " + str(data[-1]["price"])
+        else:
+            txtLbl = "Price: "
+
+        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
+        self.numOwnedLbl = tk.Label(self.bottomFrame, text='Owned: 0', font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
         #now geometrically place them (pack or grid). 
         #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
-        self.priceLbl.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(10,0))
+        self.bottomFrame.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(10,0))
+        self.priceLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
+        self.numOwnedLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
+
         #self.priceLbl.grid(row=1, column=0, sticky="nsew")
 
         canvas.get_tk_widget().pack(side=tk.TOP, fill=tk.BOTH, expand=1)
@@ -221,10 +257,17 @@ class singleStockUI(tk.Frame):
 
     #used to change contents of a stock on the stock view (like when changing the displayed stock)
     #data is a queue containing the data of the stock
-    def changeContents(self, data):
+    def changeContents(self, data, symbol):
         print("hi")
         timeToPlot = [sub["timestamp"] for sub in data]
-        valsToPlot = [sub["open"] for sub in data]
+        valsToPlot = [sub["price"] for sub in data]
+
+        txtLbl = 0
+        if len(data) > 0:
+            txtLbl = "Price: " + str(data[-1]["price"])
+        else:
+            txtLbl = "Price: "
+        self.priceLbl.config(text=txtLbl)
 
         self.stockPlot.clear()
 

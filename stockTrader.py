@@ -43,7 +43,7 @@ class stockTrader:
         currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList.multiStockUI)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
         self.stockList.addStock(currStock)
-        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Week, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Day, self.stockList.multiStockUI)
         self.stockList.addStock(currStock)
         currStock = stockObject(api_key, secret_key, "MSFT", TimeFrameUnit.Day, self.stockList.multiStockUI)
         self.stockList.addStock(currStock)
@@ -416,7 +416,7 @@ class stockTrader:
 
         #below commands can be executed immediately    
         elif "view portfolio" in cmd:
-            print("hi")
+            alpacaAPI.getPortfolio(self.api_key, self.secret_key, self.stockList)
 
         elif "top movers" in cmd:
             if "gain" in cmd:

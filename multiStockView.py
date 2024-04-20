@@ -6,6 +6,7 @@ from datetime import datetime, timedelta, timezone
 import concurrent.futures
 from alpaca.data.live import StockDataStream
 import time
+from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
 
 import voiceControl
 
@@ -154,10 +155,24 @@ class multiStockView:
             return
         
         currStock.dataLock.acquire()
-        currStock.data[-1]["open"] = data.price
-        currStock.data[-1]["timestamp"] = data.timestamp
-        print(currStock.symbol)
 
+        if currStock.timeInterval == TimeFrameUnit.Minute:
+            now = datetime.now(timezone.utc)
+
+            while len(currStock.data) > 0:
+                if (now - datetime.fromtimestamp(currStock.data[0]["timestamp"])).total_seconds() > 60: #remove entry if later than a minute ago 
+                    currStock.data.popleft()
+                else: #everything from here on should have a more recent timestamp
+                    break
+
+            currStock.data.append({"price": data.price,
+                                "timestamp": data.timestamp})
+        else:
+            currStock.data[-1]["price"] = data.price
+            currStock.data[-1]["timestamp"] = data.timestamp
+       
+       
+        print(currStock.symbol)
         currStock.dataLock.release()
 
         #show updated data in stock UI plot
