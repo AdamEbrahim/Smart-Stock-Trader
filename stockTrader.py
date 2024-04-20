@@ -35,6 +35,7 @@ class stockTrader:
 
         #used for voice control, Only necessary for leveled commands
         self.prevCommands = []
+        self.inTradeSequence = False
 
         self.UI = view(dim, res, gui_setup_time)
 
@@ -78,6 +79,7 @@ class stockTrader:
         
         currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
         self.stockList.addStock(currStock)
+
 
     def handleRemove(self, command):
         print(command)
@@ -205,18 +207,39 @@ class stockTrader:
             return
 
         qtyOrVal = qtyOrVal.casefold()
+        if "quantity" in qtyOrVal or "value" in qtyOrVal:
+            self.prevCommands.append({"marketOrLimit": "market",
+                                        "stockName": stockName,
+                                        "purchaseOrSale": purchaseOrSale,
+                                        "number": number,
+                                        "qtyOrVal": qtyOrVal})
+            self.inTradeSequence = True
+
+            self.UI.showPage("tradeView") #show trade confirmation page
+            print("not blocked")
+            
+        else:
+            print("invalid quantity or value on market order")
+
+    def confirmOrder(self):
+        info = self.prevCommands[0]
         try:
-            if "quantity" in qtyOrVal:
-                alpacaAPI.executeTradeMarketQty(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number)
-            elif "value" in qtyOrVal:
-                alpacaAPI.executeTradeMarketValue(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number)
-            else:
-                print("invalid quantity or value on market order")
+            if info["marketOrLimit"] == "market":
+                if "quantity" in info["qtyOrVal"]:
+                    alpacaAPI.executeTradeMarketQty(self.api_key, self.secret_key, self.paperTradingSession, info["stockName"], info["purchaseOrSale"], info["number"])
+                elif "value" in info["qtyOrVal"]:
+                    alpacaAPI.executeTradeMarketValue(self.api_key, self.secret_key, self.paperTradingSession, info["stockName"], info["purchaseOrSale"], info["number"])
+            elif info["marketOrLimit"] == "limit":
+                if "quantity" in info["qtyOrVal"]:
+                    alpacaAPI.executeTradeLimitQty(self.api_key, self.secret_key, self.paperTradingSession, info["stockName"], info["purchaseOrSale"], info["number"], info["limitNumber"])
+                elif "value" in info["qtyOrVal"]:
+                    alpacaAPI.executeTradeLimitValue(self.api_key, self.secret_key, self.paperTradingSession, info["stockName"], info["purchaseOrSale"], info["number"], info["limitNumber"])
 
         except Exception as err:
-            print("error in trying to execute market trade")
+            print("error in trying to execute trade")
             x = err.args
             print(x)
+
 
 
     def handleLimitOrder(self, command):
@@ -287,18 +310,22 @@ class stockTrader:
             return
 
         qtyOrVal = qtyOrVal.casefold()
-        try:
-            if "quantity" in qtyOrVal:
-                alpacaAPI.executeTradeLimitQty(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number, limitNumber)
-            elif "value" in qtyOrVal:
-                alpacaAPI.executeTradeLimitValue(self.api_key, self.secret_key, self.paperTradingSession, stockName, purchaseOrSale, number, limitNumber)
-            else:
-                print("invalid quantity or value on limit order")
+        if "quantity" in qtyOrVal or "value" in qtyOrVal:
+            self.prevCommands.append({"marketOrLimit": "limit",
+                                        "stockName": stockName,
+                                        "purchaseOrSale": purchaseOrSale,
+                                        "number": number,
+                                        "limitNumber": limitNumber,
+                                        "qtyOrVal": qtyOrVal})
+            self.inTradeSequence = True
 
-        except Exception as err:
-            print("error in trying to execute limit trade")
-            x = err.args
-            print(x)
+            self.UI.showPage("tradeView") #show trade confirmation page
+            print("not blocked")
+            
+        else:
+            print("invalid quantity or value on limit order")
+
+
 
     def checkValidStockWrapper(self, command):
         #remove punctuation from stock name if any
@@ -345,84 +372,99 @@ class stockTrader:
         
         cmd = command.casefold() #get lower case command (for case insensitive comparison)
 
-        addCmd = "add"
-        removeCmd = "remove"
-        replaceCmd = "replace"
-        timeFrameCmd = "time frame"
-        marketCmd = "market"
-        limitCmd = "limit"
+        if self.inTradeSequence: #should now be yes or no to confirm execute trade
+            if "yes" in cmd:
+                print("confirmed order, executing")
+                self.confirmOrder()
+            elif "no" in cmd:
+                print("user does not wants to cancel trade")
+            else:
+                print("invalid trade confirmation, please try again")
+                return
+            
+            self.prevCommands.clear()
+            self.inTradeSequence = False #reset the signal saying we waiting for trade confirmation
+            self.UI.showPage("allStocks") #show main stock page again
+            print("not blocked")
+        else:
+            addCmd = "add"
+            removeCmd = "remove"
+            replaceCmd = "replace"
+            timeFrameCmd = "time frame"
+            marketCmd = "market"
+            limitCmd = "limit"
 
-        if addCmd in cmd:
-            start = cmd.find(addCmd) + len(addCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
+            if addCmd in cmd:
+                start = cmd.find(addCmd) + len(addCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
 
-            if start >= len(command):
-                print("error: invalid attempt at add command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleAdd(command)
-        elif removeCmd in cmd:
-            start = cmd.find(removeCmd) + len(removeCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
-            
-            if start >= len(command):
-                print("error: invalid attempt at remove command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleRemove(command)
-        elif replaceCmd in cmd:
-            start = cmd.find(replaceCmd) + len(replaceCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
-            
-            if start >= len(command):
-                print("error: invalid attempt at replace command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleReplace(command)
-        elif timeFrameCmd in cmd:
-            start = cmd.find(timeFrameCmd) + len(timeFrameCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
-            
-            if start >= len(command):
-                print("error: invalid attempt at timeframe command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleTimeFrame(command)
-        elif marketCmd in cmd:
-            start = cmd.find(marketCmd) + len(marketCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
-            
-            if start >= len(command):
-                print("error: invalid attempt at market order command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleMarketOrder(command)
-        elif limitCmd in cmd:
-            start = cmd.find(limitCmd) + len(limitCmd) #find end index of first occurrence of the command
-            start = self.getNextWordIndex(start, command)
-            
-            if start >= len(command):
-                print("error: invalid attempt at limit order command")
-                return
-    
-            command = command[start:] #substring of all chars from "start" to end of string
-            self.handleLimitOrder(command)
+                if start >= len(command):
+                    print("error: invalid attempt at add command")
+                    return
         
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleAdd(command)
+            elif removeCmd in cmd:
+                start = cmd.find(removeCmd) + len(removeCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
+                
+                if start >= len(command):
+                    print("error: invalid attempt at remove command")
+                    return
+        
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleRemove(command)
+            elif replaceCmd in cmd:
+                start = cmd.find(replaceCmd) + len(replaceCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
+                
+                if start >= len(command):
+                    print("error: invalid attempt at replace command")
+                    return
+        
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleReplace(command)
+            elif timeFrameCmd in cmd:
+                start = cmd.find(timeFrameCmd) + len(timeFrameCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
+                
+                if start >= len(command):
+                    print("error: invalid attempt at timeframe command")
+                    return
+        
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleTimeFrame(command)
+            elif marketCmd in cmd:
+                start = cmd.find(marketCmd) + len(marketCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
+                
+                if start >= len(command):
+                    print("error: invalid attempt at market order command")
+                    return
+        
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleMarketOrder(command)
+            elif limitCmd in cmd:
+                start = cmd.find(limitCmd) + len(limitCmd) #find end index of first occurrence of the command
+                start = self.getNextWordIndex(start, command)
+                
+                if start >= len(command):
+                    print("error: invalid attempt at limit order command")
+                    return
+        
+                command = command[start:] #substring of all chars from "start" to end of string
+                self.handleLimitOrder(command)
+            
 
-        #below commands can be executed immediately    
-        elif "view portfolio" in cmd:
-            alpacaAPI.getPortfolio(self.api_key, self.secret_key, self.stockList)
+            #below commands can be executed immediately    
+            elif "view portfolio" in cmd:
+                alpacaAPI.getPortfolio(self.api_key, self.secret_key, self.stockList)
 
-        elif "top movers" in cmd:
-            if "gain" in cmd:
-                alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "gain")
-            elif "loss" in cmd or "lose" in cmd:
-                alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "loss")
+            elif "top movers" in cmd:
+                if "gain" in cmd:
+                    alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "gain")
+                elif "loss" in cmd or "lose" in cmd:
+                    alpacaAPI.getTopMovers(self.api_key, self.secret_key, self.stockList, "loss")
 
         
 
