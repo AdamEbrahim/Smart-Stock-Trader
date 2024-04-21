@@ -23,10 +23,13 @@ from sys import platform
 #ui stuff
 from view import view
 
+#pir and led stuff
+from pir import motionDetection
+
 class stockTrader:
 
     #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, res = monitor resolution
-    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time):
+    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time, pir_pin, led_pin):
         self.api_key = api_key
         self.secret_key = secret_key
         self.paperTradingSession = paperTrading
@@ -53,6 +56,8 @@ class stockTrader:
         threading.Thread(target=self.setupVoiceControl).start()
 
         #threading.Thread(target=self.test).start()
+        if platform == "linux": #If Linux (really just Raspberry Pi): 
+            threading.Thread(target=motionDetection, args=[pir_pin]).start()
 
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
