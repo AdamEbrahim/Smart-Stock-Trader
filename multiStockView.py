@@ -176,7 +176,7 @@ class multiStockView:
         currStock.dataLock.release()
 
         #show updated data in stock UI plot
-        currStock.stockUI.changeContents(currStock.data)
+        currStock.stockUI.changeContents(currStock.data, currStock.symbol)
 
         return
     

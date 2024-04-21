@@ -59,7 +59,7 @@ class stockObject:
         print("changed time interval")
         self.initHistoricData()
 
-        self.stockUI.changeContents(self.data) #make sure to show updated data in stock UI plot
+        self.stockUI.changeContents(self.data, self.symbol) #make sure to show updated data in stock UI plot
 
 
     def initHistoricData(self):
@@ -171,7 +171,7 @@ class stockObject:
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
         if isMarketOpen(datetime.now(timezone.utc)):
-            #do something with lock, also currStock.stockUI.changeContents(currStock.data). Push a new entry if necessary to data queue
+            #do something with lock, also currStock.stockUI.changeContents(currStock.data, currStock.symbol). Push a new entry if necessary to data queue
             # match self.timeInterval:
             #     case TimeFrameUnit.Hour:
 
@@ -257,7 +257,7 @@ class singleStockUI(tk.Frame):
 
     #used to change contents of a stock on the stock view (like when changing the displayed stock)
     #data is a queue containing the data of the stock
-    def changeContents(self, data):
+    def changeContents(self, data, symbol):
         print("hi")
         timeToPlot = [sub["timestamp"] for sub in data]
         valsToPlot = [sub["price"] for sub in data]
@@ -274,6 +274,7 @@ class singleStockUI(tk.Frame):
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
+        self.stockPlot.set_title(symbol, fontdict={'color': 'white'})
 
         self.fig.canvas.draw()
 
