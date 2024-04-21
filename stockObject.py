@@ -257,7 +257,7 @@ class singleStockUI(tk.Frame):
 
     #used to change contents of a stock on the stock view (like when changing the displayed stock)
     #data is a queue containing the data of the stock
-    def changeContents(self, data, symbol):
+    def changeContents(self, data):
         print("hi")
         timeToPlot = [sub["timestamp"] for sub in data]
         valsToPlot = [sub["price"] for sub in data]
