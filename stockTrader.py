@@ -29,7 +29,7 @@ from pir import motionDetection
 class stockTrader:
 
     #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, res = monitor resolution
-    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time, pir_pin, led_pin):
+    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time, pir_pin, led_pin, monitor_timeout):
         self.api_key = api_key
         self.secret_key = secret_key
         self.paperTradingSession = paperTrading
@@ -57,7 +57,7 @@ class stockTrader:
 
         #threading.Thread(target=self.test).start()
         if platform == "linux": #If Linux (really just Raspberry Pi): 
-            threading.Thread(target=motionDetection, args=[pir_pin]).start()
+            threading.Thread(target=motionDetection, args=[pir_pin, monitor_timeout, self.turnScreenOn, self.turnScreenOff]).start()
 
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
@@ -69,6 +69,15 @@ class stockTrader:
     #     time.sleep(20)
     #     print("yuh2")
     #     self.stockList.addStock(stockObject(self.api_key, self.secret_key, "AMD", TimeFrameUnit.Day, self.stockList.multiStockUI))
+
+    #callback for "turning screen on" after pir detects a person has come in front of device
+    def turnScreenOn(self):
+        self.UI.showPage("allStocks")
+
+    #callback for "turning screen off" after monitor timeout (no pir motion for period of time)
+    def turnScreenOff(self):
+        self.UI.showPage("blackScreen")
+
 
     #specific voice command handling functions
     #command is raw command (no casefolding) with all words prior to and including the high level command ("add") removed

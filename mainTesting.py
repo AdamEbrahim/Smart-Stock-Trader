@@ -53,7 +53,7 @@ if __name__ == '__main__':
     # alpacaAPI.executeTradeLimitQty(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 2.75, 140.3)
     # alpacaAPI.executeTradeLimitValue(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, "AAPL", OrderSide.BUY, 185.6, 140.75)
 
-    trader = stockTrader(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, (2,2), keys['MONITOR_RESOLUTION'], keys['GUI_SETUP_TIME'], keys['PIR_PIN'], keys['LED_PIN'])
+    trader = stockTrader(keys['PAPER_API_KEY'], keys['PAPER_SECRET_KEY'], True, (2,2), keys['MONITOR_RESOLUTION'], keys['GUI_SETUP_TIME'], keys['PIR_PIN'], keys['LED_PIN'], keys['MONITOR_TIMEOUT'])
 
     #--CANNOT LET MAIN THREAD DIE OR ELSE THERE ARE ERRORS WITH SUBMITTING THREADPOOL TASKS--#
     #currStock2 = stockObject(keys['LIVE_API_KEY'], keys['LIVE_SECRET_KEY'], "GOOG", TimeFrameUnit.Week)

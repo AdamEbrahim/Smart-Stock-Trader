@@ -116,6 +116,9 @@ class view():
         trade.grid(row=0, column=0, sticky="nsew")
         self.allPages["tradeView"] = trade
 
+        blackScreen = tk.Frame(self.mainFrame, bg='black')
+        blackScreen.grid(row=0, column=0, sticky="nsew")
+        self.allPages["blackScreen"] = blackScreen
 
         #starting page
         self.showPage("tradeView")
