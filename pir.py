@@ -1,10 +1,12 @@
 from gpiozero import MotionSensor
 
-gpio_pin = 17
 
-pir = MotionSensor(gpio_pin)
+if __name__ == '__main__':
+    gpio_pin = 17
 
-while True:
-    pir.wait_for_active()
-    print("movement")
-    pir.wait_for_inactive()
+    pir = MotionSensor(gpio_pin)
+
+    while True:
+        pir.wait_for_active()
+        print("movement")
+        pir.wait_for_inactive()

@@ -40,4 +40,14 @@ pip install pyaudio
 
 
 After completing the above, to install the required dependencies run: 
+# on device without PIR sensors/LED strip:
 pip install -r requirements.txt
+
+# on devices with PIR sensors/LED strip:
+pip install -r rpi_requirements.txt
+
+Finally, if using PIR Sensors and LED strip, configure display settings by running:
+1. sudo raspi-config
+2. Select "Display Options"
+3. Select "Screen Blanking"
+4. Enable Screen Blanking
