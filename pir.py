@@ -1,10 +1,20 @@
-from gpiozero import MotionSensor
+from sys import platform
+import time
 
-gpio_pin = 17
+if platform == "linux": #If Linux (Raspberry Pi): 
+    #from gpiozero import MotionSensor
+    import RPi.GPIO as GPIO
 
-pir = MotionSensor(gpio_pin)
 
-while True:
-    pir.wait_for_active()
-    print("movement")
-    pir.wait_for_inactive()
+def motionDetection(gpio_pin):
+    if platform == "linux": #If Linux (Raspberry Pi): 
+        GPIO.setmode(GPIO.BCM)
+        GPIO.setup(gpio_pin, GPIO.IN)
+
+        while True:
+            if GPIO.input(gpio_pin):
+                print("movement")
+            else:
+                print("not any movement")
+            
+            time.sleep(5)
