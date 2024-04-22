@@ -35,7 +35,7 @@ def LEDStripControl(api_key, secret_key, led_pin, led_pixels):
 
             if profitOrLoss: #if profit
                 print("profit")
-                pixels.fill((0, 255, 0)) #green
+                pixels.fill((255, 0, 0)) #green
                 pixels.show()
             else: #if loss
                 print("loss")
