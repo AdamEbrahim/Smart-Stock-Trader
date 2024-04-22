@@ -171,7 +171,7 @@ class stockObject:
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
         if isMarketOpen(datetime.now(timezone.utc)):
-            #do something with lock, also currStock.stockUI.changeContents(currStock.data, currStock.symbol). Push a new entry if necessary to data queue
+            #do something with lock, also if allowChanges = true: currStock.stockUI.changeContents(currStock.data, currStock.symbol). Push a new entry if necessary to data queue
             # match self.timeInterval:
             #     case TimeFrameUnit.Hour:
 

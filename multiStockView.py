@@ -21,6 +21,7 @@ class multiStockView:
         self.secret_key = secret_key
         self.dim = dim
         self.size = dim[0] * dim[1] #max number of stocks in view
+        self.changes = False
 
         self.stocks = deque() #queue of stocks (for ordering purposes)
         self.stocksDict = {} #dictionary of stocks (for fast lookup purposes). key = symbol, value = stock
@@ -45,6 +46,8 @@ class multiStockView:
     #     print(list(self.stocksDict.keys()))
     #     self.websocket_client.subscribe_trades(self.websocketHandlerTrades, *list(self.stocksDict.keys()))
 
+    def allowChanges(self):
+        self.changes = True
 
     def setupWebsocket(self):
         self.websocket_client = StockDataStream(self.api_key, self.secret_key)
@@ -175,8 +178,9 @@ class multiStockView:
         print(currStock.symbol)
         currStock.dataLock.release()
 
-        #show updated data in stock UI plot
-        currStock.stockUI.changeContents(currStock.data, currStock.symbol)
+        #show updated data in stock UI plot after main loop has started running
+        if self.changes:
+            currStock.stockUI.changeContents(currStock.data, currStock.symbol)
 
         return
     
