@@ -229,7 +229,7 @@ class stockTrader:
                                         "qtyOrVal": qtyOrVal})
             self.inTradeSequence = True
 
-            self.UI.allPages["tradeConfirmation"].changeConfirmationText({"marketOrLimit": "limit",
+            self.UI.allPages["tradeConfirmation"].changeConfirmationText({"marketOrLimit": "market",
                                                                             "stockName": stockName,
                                                                             "purchaseOrSale": purchaseOrSale,
                                                                             "number": number,
@@ -404,7 +404,7 @@ class stockTrader:
                 print("confirmed order, executing")
                 self.confirmOrder()
             elif "no" in cmd:
-                print("user does not wants to cancel trade")
+                print("user wants to cancel trade")
             else:
                 print("invalid trade confirmation, please try again")
                 return
@@ -626,7 +626,7 @@ class stockTrader:
                             help="Don't use the english model.")
         parser.add_argument("--energy_threshold", default=1000,
                             help="Energy level for mic to detect.", type=int)
-        parser.add_argument("--record_timeout", default=6,
+        parser.add_argument("--record_timeout", default=9,
                             help="How real time the recording is in seconds.", type=float)
         parser.add_argument("--phrase_timeout", default=3,
                             help="How much empty space between recordings before we "

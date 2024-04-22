@@ -139,7 +139,7 @@ class view():
         trade.grid(row=0, column=0, sticky="nsew")
         self.allPages["tradeView"] = trade
 
-        tradeConf = tradeConfirmation(self.mainFrame, bg='black')
+        tradeConf = tradeConfirmation(self.mainFrame)
         tradeConf.grid(row=0, column=0, sticky="nsew")
         self.allPages["tradeConfirmation"] = tradeConf
 
