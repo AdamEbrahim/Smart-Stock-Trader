@@ -90,7 +90,7 @@ def enoughToSellQty(trading_client, stockSymbol, quantity):
     found = False
     for position in positions:
         if position.symbol == stockSymbol:
-            if position.qty_available < quantity: #not sure if need to use qty_available or qty
+            if float(position.qty_available) < float(quantity): #not sure if need to use qty_available or qty
                 print("not enough of stock to sell the given quantity with no shorting")
                 return -1
             
@@ -112,7 +112,7 @@ def enoughToSellVal(trading_client, stockSymbol, dollarValue):
     found = False
     for position in positions:
         if position.symbol == stockSymbol:
-            if position.market_value < dollarValue:
+            if float(position.market_value) < float(dollarValue):
                 print("not enough of stock to sell the given quantity with no shorting")
                 return -1
             
