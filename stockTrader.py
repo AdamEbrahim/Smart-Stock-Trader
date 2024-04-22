@@ -62,6 +62,7 @@ class stockTrader:
             threading.Thread(target=LEDStripControl, args=[api_key, secret_key, led_pin, led_pixels]).start()
 
         #this works, can only call mainloop with main thread i think
+        self.stockList.allowChanges()
         self.UI.tk.mainloop()
 
     # def test(self):
@@ -678,6 +679,7 @@ class stockTrader:
         transcription = ['']
 
         with source:
+            print(source)
             recorder.adjust_for_ambient_noise(source)
 
         def record_callback(_, audio:sr.AudioData) -> None:
