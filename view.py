@@ -11,6 +11,7 @@ from multiStockView import multiStockView
 from stockObject import stockObject
 
 from sys import platform
+from alpaca.trading.enums import OrderSide
 
 #called to update a stock figure when new data comes in
 def animate(fig):
@@ -58,13 +59,6 @@ def animate(fig):
 
 
 
-
-#popup window to confirm a stock trade
-class tradeConfirmation(tk.Frame):
-    def __init__(self, parent):
-        tk.Frame.__init__(self, parent, bg='black')
-
-
 #view when trading a stock
 class tradeView(tk.Frame):
     def __init__(self, parent, controller):
@@ -73,6 +67,35 @@ class tradeView(tk.Frame):
                             command=lambda: controller.showPage("allStocks"))
         button.pack()
 
+#popup window to confirm a stock trade
+class tradeConfirmation(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent, bg='black')
+        self.lblPre = tk.Label(self, text="Are you sure?", font=('Helvetica', '20', "bold"), fg="white", bg="black")
+        self.lblMain = tk.Label(self, text="Empty", font=('Helvetica', '20', "bold"), fg="white", bg="black")
+        self.lblPre.pack(side=tk.TOP, fill = tk.BOTH, expand = 1)
+        self.lblMain.pack(side=tk.TOP, fill = tk.BOTH, expand = 1)
+
+    def changeConfirmationText(self, tradeData):
+        newTxt = ""
+        if tradeData["purchaseOrSale"] == OrderSide.BUY:
+            newTxt = newTxt + "Buy "
+        elif tradeData["purchaseOrSale"] == OrderSide.SELL:
+            newTxt = newTxt + "Sell "
+
+        if "quantity" in tradeData["qtyOrVal"]:
+            newTxt = newTxt + str(tradeData["number"]) + " shares of "
+        elif "value" in tradeData["qtyOrVal"]:
+            newTxt = newTxt + "$" + str(tradeData["number"]) + " worth of "
+
+        newTxt = newTxt + tradeData["stockName"]
+
+        if tradeData["marketOrLimit"] == "market":
+            newTxt = newTxt + "."
+        elif tradeData["marketOrLimit"] == "limit":
+            newTxt = newTxt + " at limit price $" + str(tradeData["limitNumber"] + ".")
+
+        self.lblMain.config(text=newTxt)
 
 class view():
     #dim = tuple of what the allStockView grid dimensions will be, res = resolution (only linux), gui_setup_time (only raspberry pi)
@@ -115,6 +138,10 @@ class view():
         trade = tradeView(self.mainFrame, self)
         trade.grid(row=0, column=0, sticky="nsew")
         self.allPages["tradeView"] = trade
+
+        tradeConf = tradeConfirmation(self.mainFrame, bg='black')
+        tradeConf.grid(row=0, column=0, sticky="nsew")
+        self.allPages["tradeConfirmation"] = tradeConf
 
         blackScreen = tk.Frame(self.mainFrame, bg='black')
         blackScreen.grid(row=0, column=0, sticky="nsew")

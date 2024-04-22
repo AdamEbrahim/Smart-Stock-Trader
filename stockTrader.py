@@ -229,7 +229,12 @@ class stockTrader:
                                         "qtyOrVal": qtyOrVal})
             self.inTradeSequence = True
 
-            self.UI.showPage("tradeView") #show trade confirmation page
+            self.UI.allPages["tradeConfirmation"].changeConfirmationText({"marketOrLimit": "limit",
+                                                                            "stockName": stockName,
+                                                                            "purchaseOrSale": purchaseOrSale,
+                                                                            "number": number,
+                                                                            "qtyOrVal": qtyOrVal})
+            self.UI.showPage("tradeConfirmation") #show trade confirmation page
             print("not blocked")
             
         else:
@@ -253,6 +258,8 @@ class stockTrader:
             print("error in trying to execute trade")
             x = err.args
             print(x)
+
+        self.UI.showPage("allStocks")
 
 
 
@@ -333,7 +340,13 @@ class stockTrader:
                                         "qtyOrVal": qtyOrVal})
             self.inTradeSequence = True
 
-            self.UI.showPage("tradeView") #show trade confirmation page
+            self.UI.allPages["tradeConfirmation"].changeConfirmationText({"marketOrLimit": "limit",
+                                                                            "stockName": stockName,
+                                                                            "purchaseOrSale": purchaseOrSale,
+                                                                            "number": number,
+                                                                            "limitNumber": limitNumber,
+                                                                            "qtyOrVal": qtyOrVal})
+            self.UI.showPage("tradeConfirmation") #show trade confirmation page
             print("not blocked")
             
         else:
