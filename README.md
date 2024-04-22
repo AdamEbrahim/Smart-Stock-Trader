@@ -11,7 +11,7 @@ Demo Video:
 
 
 ## Installation
-Follow the below instructions to install the necessary requirements to run the program. Unless using a Raspberry Pi with an LED strip and PIR Sensor it is recommended to create a venv inside the overall directory and to download all pip dependencies in the venv. 
+Follow the below instructions to install the necessary requirements to run the program. It is recommended to create a venv inside the overall directory and to download all pip dependencies in the venv. 
 
 1. Whisper requires the command-line tool ffmpeg to be installed on your system, which is available from most package managers:
 
@@ -74,7 +74,7 @@ pip install pyaudio
 ```
 
 
-3. After completing the above, to install the required dependencies (ideally in venv except for Raspberry Pi with LED strip and PIR sensor) run: 
+3. After completing the above, to install the required dependencies run: 
 
 - On Windows or MacOS:
 ```bash
@@ -88,7 +88,7 @@ pip install -r requirements.txt
 
 - On Raspberry Pi (if using LED strip and PIR sensor):
 ```bash
-sudo pip install -r rpi_requirements.txt --break-system-packages
+pip install -r rpi_requirements.txt
 ```
 
 ## Configuration and Wiring (Raspberry Pi Only)
@@ -101,6 +101,14 @@ If using a raspberry pi configure display settings by running:
 
 If choosing to connect a PIR sensor and LED strip, connect the PIR sensor signal pin to the desired GPIO pin and the LED strip data pin to one of GPIO10, GPIO12, GPIO18, or GPIO21.
 
+Currently, NeoPixel requires sudo to run on the Raspberry Pi. However, sudo can disable proper microphone input detection. Thus, it is recommended to connect the LED strip data pin to GPIO10 (board.D10) and to run the following:
+
+1. sudo raspi-config
+2. Select "Interface Options"
+3. Select "SPI"
+4. Enable SPI
+
+This will allow the program to run properly without sudo.
 
 ## Config File
 To put necessary environment variables, such as trading API keys, make a copy of "config_template.yml" and name it "config.yml". Fill in the following fields in "config.yml" depending on OS/Device:
@@ -129,14 +137,8 @@ MONITOR_TIMEOUT: Minutes before device turns off after detecting user has left.
 ## Running
 Finally, run the program using:
 
-- On Raspberry Pi with PIR Sensor and LED strip: 
-```bash
-sudo python3 mainTesting.py
-```
-
-- On all other devices/configurations:
 ```bash
 python3 mainTesting.py
 ```
 
-Sudo is required for the Raspberry Pi with PIR Sensor and LED strip because the neopixel library requires sudo access.
+## Voice Control Commands
