@@ -8,10 +8,23 @@ if platform == "linux": #If Linux (Raspberry Pi):
     import neopixel
 
 
-def LEDStripControl(api_key, secret_key):
+def LEDStripControl(api_key, secret_key, led_pin, led_pixels):
     if platform == "linux": #If Linux (Raspberry Pi):
-        pixel_pin = board.D18
-        num_pixels = 60
+        pixel_pin = 0
+        if led_pin == 18:
+            pixel_pin = board.D18
+        elif led_pin == 10:
+            pixel_pin = board.D10
+        elif led_pin == 12:
+            pixel_pin = board.D12
+        elif led_pin == 21:
+            pixel_pin = board.D21
+        else:
+            print("invalid pin to control LED strip, please use one of GPIO 10, 12, 18, 21")
+            return
+
+        
+        num_pixels = led_pixels
         ORDER = neopixel.RGB
         pixels = neopixel.NeoPixel(pixel_pin, num_pixels, brightness=1, auto_write=False, pixel_order=ORDER)
         pixels.fill((255, 0, 0))

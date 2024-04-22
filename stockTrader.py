@@ -30,7 +30,7 @@ from LEDstrip import LEDStripControl
 class stockTrader:
 
     #paperTrading = true if paper trading session, false otherwise, dim = tuple (x,y) of stock UI dimensions, res = monitor resolution
-    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time, pir_pin, led_pin, monitor_timeout):
+    def __init__(self, api_key, secret_key, paperTrading, dim, res, gui_setup_time, pir_pin, led_pin, led_pixels, monitor_timeout):
         self.api_key = api_key
         self.secret_key = secret_key
         self.paperTradingSession = paperTrading
@@ -59,7 +59,7 @@ class stockTrader:
         #threading.Thread(target=self.test).start()
         if platform == "linux": #If Linux (really just Raspberry Pi): 
             threading.Thread(target=motionDetection, args=[pir_pin, monitor_timeout, self.turnScreenOn, self.turnScreenOff]).start()
-            threading.Thread(target=LEDStripControl, args=[api_key, secret_key]).start()
+            threading.Thread(target=LEDStripControl, args=[api_key, secret_key, led_pin, led_pixels]).start()
 
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
