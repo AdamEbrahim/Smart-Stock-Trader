@@ -154,7 +154,7 @@ class stockObject:
                     if i == len(barData) - 1: #add extra data point to queue for trades coming in from websocket
                         lastPrice = self.data[-1]["price"]
                         self.data.append({"price": lastPrice,
-                                        "timestamp": datetime.timestamp(now)})
+                                        "timestamp": datetime.now(timezone.utc)})
                 else: #market not open, no websocket updates, reinit history to get new "after hours" trading data
                     self.data.append({"price": barData[int(i)].close,
                                     "timestamp": barData[int(i)].timestamp})
