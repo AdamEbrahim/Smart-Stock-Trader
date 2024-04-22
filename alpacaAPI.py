@@ -4,7 +4,7 @@ from alpaca.data.historical.screener import ScreenerClient
 from alpaca.data.models.screener import Movers, Mover
 from alpaca.data.enums import DataFeed
 from alpaca.data.timeframe import TimeFrame, TimeFrameUnit
-from datetime import datetime
+from datetime import datetime, timezone
 
 from alpaca.trading.client import TradingClient
 from alpaca.trading.requests import MarketOrderRequest, LimitOrderRequest, GetAssetsRequest
@@ -15,6 +15,8 @@ from alpaca.common.exceptions import APIError
 
 from multiStockView import multiStockView
 from stockObject import stockObject
+
+from utilities import getLastClose, isMarketOpen
 
 #gainOrLoss = "gain" or default for top gainers, "loss" for top losers. currentStockList = multiStockView object
 def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
@@ -37,9 +39,12 @@ def getTopMovers(api_key, secret_key, currentStockList, gainOrLoss):
 
     return
 
-def getPortfolio(api_key, secret_key, currentStockList):
+def requestPortfolio(api_key, secret_key):
     client = TradingClient(api_key, secret_key)
-    positions = client.get_all_positions()
+    return client.get_all_positions()
+
+def getPortfolio(api_key, secret_key, currentStockList):
+    positions = requestPortfolio(api_key, secret_key)
 
     #remove currently displayed stocks
     toRemove = list(currentStockList.stocksDict.keys())
@@ -246,5 +251,38 @@ def getAssets(api_key, secret_key, isPaper):
 
     assets = trading_client.get_all_assets(search_params)
 
+#return true if profit on the day, false if loss on the day (or last day markets open)
+def dailyProfitOrLoss(api_key, secret_key):
+    positions = requestPortfolio(api_key, secret_key)
+
+    client = StockHistoricalDataClient(api_key, secret_key)
+    now = datetime.now(timezone.utc)
+    marketUp = isMarketOpen(now)
+
+    if not marketUp:
+        now = getLastClose(now)
+
+    requiredStart = now.date()
+
+    total = 0
+    for i in range(len(positions)):
+        symbol = positions[i].symbol
+        numOwned = positions[i].qty
+        barsRequest = StockBarsRequest(symbol_or_symbols=symbol, timeframe=TimeFrame.Day, start=requiredStart)
+        bars = client.get_stock_bars(barsRequest)
+        barData = bars[symbol]
+        openPrice = barData[0].open
+
+        latestTradeRequest = StockLatestTradeRequest(symbol_or_symbols=symbol)
+        trade = client.get_stock_latest_trade(latestTradeRequest)
+        currPrice = trade[symbol].price
+
+        total = total + ((currPrice - openPrice) * float(numOwned))
+
+    print(total)
+    if total >= 0:
+        return True
+    else:
+        return False
 
 

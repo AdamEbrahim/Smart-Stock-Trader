@@ -25,6 +25,7 @@ from view import view
 
 #pir and led stuff
 from pir import motionDetection
+from LEDstrip import LEDStripControl
 
 class stockTrader:
 
@@ -58,6 +59,7 @@ class stockTrader:
         #threading.Thread(target=self.test).start()
         if platform == "linux": #If Linux (really just Raspberry Pi): 
             threading.Thread(target=motionDetection, args=[pir_pin, monitor_timeout, self.turnScreenOn, self.turnScreenOff]).start()
+            threading.Thread(target=LEDStripControl, args=[api_key, secret_key]).start()
 
         #this works, can only call mainloop with main thread i think
         self.UI.tk.mainloop()
