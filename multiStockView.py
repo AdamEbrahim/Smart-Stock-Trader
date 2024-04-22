@@ -160,7 +160,7 @@ class multiStockView:
             now = datetime.now(timezone.utc)
 
             while len(currStock.data) > 0:
-                if (now - datetime.fromtimestamp(currStock.data[0]["timestamp"])).total_seconds() > 60: #remove entry if later than a minute ago 
+                if (now - currStock.data[0]["timestamp"]).total_seconds() > 60: #remove entry if later than a minute ago 
                     currStock.data.popleft()
                 else: #everything from here on should have a more recent timestamp
                     break

@@ -76,6 +76,9 @@ class stockObject:
         match self.timeInterval:
             case TimeFrameUnit.Minute: #live data feed
                 print("Minute")
+                self.dataLock.acquire()
+                self.data.clear()
+                self.dataLock.release()
                 return #no init historical data, all will come from websocket
 
             case TimeFrameUnit.Hour: #show last 1 hour (maybe 3?)
@@ -170,7 +173,7 @@ class stockObject:
     #update stock's data when timer goes off
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
-        if isMarketOpen(datetime.now(timezone.utc)):
+        if isMarketOpen(datetime.now(timezone.utc)) and self.timeInterval != TimeFrameUnit.Minute:
             #do something with lock, also currStock.stockUI.changeContents(currStock.data, currStock.symbol). Push a new entry if necessary to data queue
             # match self.timeInterval:
             #     case TimeFrameUnit.Hour:
