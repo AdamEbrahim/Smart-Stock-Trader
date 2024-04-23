@@ -250,7 +250,7 @@ class singleStockUI(tk.Frame):
         else:
             txtLbl = "Price: "
 
-        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '14', "bold"), fg="white", bg="black", anchor=tk.W, padx=30)
+        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '12', "bold"), fg="white", bg="black", anchor=tk.W, padx=30)
         #self.numOwnedLbl = tk.Label(self.bottomFrame, text='Owned: 0', font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
         #now geometrically place them (pack or grid). 
         #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
@@ -307,6 +307,8 @@ class singleStockUI(tk.Frame):
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
         self.stockPlot.set_title(symbol, fontdict={'color': 'white'})
+
+        self.fig.autofmt_xdate()
 
         self.fig.canvas.draw()
 
