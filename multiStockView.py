@@ -123,6 +123,7 @@ class multiStockView:
         del self.stocksDict[stockToReplaceSymbol]
 
         self.stocksDict[newStock.symbol] = newStock
+        self.websocket_client.subscribe_trades(self.websocketHandlerTrades, newStock.symbol)
         
         self.multiStockUI.recalibrateView(self.dim, self.stocks)
 
