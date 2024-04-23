@@ -221,9 +221,9 @@ class singleStockUI(tk.Frame):
 
         self.stockPlot.set_facecolor("none")
         #self.stockPlot.xaxis.label.set_color('white')
-        self.stockPlot.tick_params(axis='x', colors='white', labelsize=6)
+        self.stockPlot.tick_params(axis='x', colors='white', labelsize=5)
         #self.stockPlot.yaxis.label.set_color('white')
-        self.stockPlot.tick_params(axis='y', colors='white', labelsize=8)
+        self.stockPlot.tick_params(axis='y', colors='white', labelsize=7)
 
         #stock initializes as day timeframe, choose the date formatter based on this
         location = tz.gettz("America/New_York")
@@ -246,15 +246,15 @@ class singleStockUI(tk.Frame):
 
         txtLbl = 0
         if len(data) > 0:
-            txtLbl = "Price: " + str(data[-1]["price"])
+            txtLbl = "Price: $" + str(data[-1]["price"])
         else:
             txtLbl = "Price: "
 
-        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '12', "bold"), fg="white", bg="black", anchor=tk.W, padx=30)
+        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '10', "bold"), fg="white", bg="black", anchor=tk.SW, padx=30)
         #self.numOwnedLbl = tk.Label(self.bottomFrame, text='Owned: 0', font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
         #now geometrically place them (pack or grid). 
         #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
-        self.bottomFrame.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(10,0))
+        self.bottomFrame.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(2,0))
         self.priceLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
         #self.numOwnedLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
 
@@ -276,7 +276,7 @@ class singleStockUI(tk.Frame):
 
         txtLbl = 0
         if len(data) > 0:
-            txtLbl = "Price: " + str(data[-1]["price"])
+            txtLbl = "Price: $" + str(data[-1]["price"])
         else:
             txtLbl = "Price: "
         self.priceLbl.config(text=txtLbl)
@@ -306,7 +306,7 @@ class singleStockUI(tk.Frame):
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
-        self.stockPlot.set_title(symbol, fontdict={'color': 'white'})
+        self.stockPlot.set_title(symbol, fontdict={'fontsize': 10, 'fontweight': "bold", 'color': 'white'})
 
         self.fig.autofmt_xdate()
 

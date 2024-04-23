@@ -218,4 +218,4 @@ class allStockView(tk.Frame):
                     return
 
                 currStockUI = stocks[index].stockUI
-                currStockUI.grid(row=i, column=j, sticky="nsew", padx=(20, 20), pady=(20, 20))
+                currStockUI.grid(row=i, column=j, sticky="nsew", padx=(16, 16), pady=(10, 10))
