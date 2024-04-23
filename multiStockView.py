@@ -180,7 +180,7 @@ class multiStockView:
 
         #show updated data in stock UI plot after main loop has started running
         if self.changes:
-            currStock.stockUI.changeContents(currStock.data, currStock.symbol)
+            currStock.stockUI.changeContents(currStock.data, currStock.symbol, currStock.timeInterval)
 
         return
     

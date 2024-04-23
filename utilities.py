@@ -27,7 +27,7 @@ def getLastClose(dtObject):
     if (lastOpenDay.date().isoformat() == start and dtTimestamp < dayClose):
         dayClose = sched.at[arr[len(arr) - 2], arr2[1]].timestamp()
 
-    return datetime.fromtimestamp(dayClose)
+    return (datetime.fromtimestamp(dayClose) + timedelta(hours=4)) #timedelta is temporary hotfix for est to utc conversion
 
 
 

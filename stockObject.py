@@ -6,6 +6,7 @@ import threading
 from collections import deque
 from datetime import datetime, timedelta, timezone
 from utilities import isMarketOpen, isMarketOpenDay, getLastClose
+from dateutil import tz
 
 #UI stuff
 import tkinter as tk
@@ -17,6 +18,7 @@ from matplotlib import style
 from matplotlib import pyplot as plt
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg, NavigationToolbar2Tk
 from matplotlib.figure import Figure
+import matplotlib.dates as mdates
 
 #style.use("ggplot")
 
@@ -59,7 +61,7 @@ class stockObject:
         print("changed time interval")
         self.initHistoricData()
 
-        self.stockUI.changeContents(self.data, self.symbol) #make sure to show updated data in stock UI plot
+        self.stockUI.changeContents(self.data, self.symbol, self.timeInterval) #make sure to show updated data in stock UI plot
 
 
     def initHistoricData(self):
@@ -174,7 +176,7 @@ class stockObject:
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
         if isMarketOpen(datetime.now(timezone.utc)):
-            #do something with lock, also if allowChanges = true: currStock.stockUI.changeContents(currStock.data, currStock.symbol). Push a new entry if necessary to data queue
+            #do something with lock, also if allowChanges = true: currStock.stockUI.changeContents(currStock.data, currStock.symbol, currStock.timeInterval). Push a new entry if necessary to data queue
             # match self.timeInterval:
             #     case TimeFrameUnit.Hour:
 
@@ -223,6 +225,11 @@ class singleStockUI(tk.Frame):
         #self.stockPlot.yaxis.label.set_color('white')
         self.stockPlot.tick_params(axis='y', colors='white', labelsize=6)
 
+        #stock initializes as day timeframe, choose the date formatter based on this
+        location = tz.gettz("America/New_York")
+        dateFmt = mdates.DateFormatter('%I:%M%p', tz=location)
+        self.stockPlot.xaxis.set_major_formatter(dateFmt)
+        #self.stockPlot.xaxis_date('EST')
 
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
@@ -260,7 +267,7 @@ class singleStockUI(tk.Frame):
 
     #used to change contents of a stock on the stock view (like when changing the displayed stock)
     #data is a queue containing the data of the stock
-    def changeContents(self, data, symbol):
+    def changeContents(self, data, symbol, timeInterval):
         print("hi")
         timeToPlot = [sub["timestamp"] for sub in data]
         valsToPlot = [sub["price"] for sub in data]
@@ -273,6 +280,26 @@ class singleStockUI(tk.Frame):
         self.priceLbl.config(text=txtLbl)
 
         self.stockPlot.clear()
+
+        dateFmt = 0
+        location = tz.gettz("America/New_York")
+        match timeInterval:
+            case TimeFrameUnit.Minute:
+                dateFmt = mdates.DateFormatter('%I:%M:%S%p', tz=location)
+            case TimeFrameUnit.Hour:
+                dateFmt = mdates.DateFormatter('%I:%M%p', tz=location)
+            case TimeFrameUnit.Day:
+                dateFmt = mdates.DateFormatter('%I:%M%p', tz=location)
+            case TimeFrameUnit.Week:
+                dateFmt = mdates.DateFormatter('%a, %b %d', tz=location)
+            case TimeFrameUnit.Month:
+                dateFmt = mdates.DateFormatter('%a, %b %d', tz=location)
+            case "oneYear":
+                dateFmt = mdates.DateFormatter('%b %d, %Y', tz=location)
+            case _:
+                dateFmt = mdates.DateFormatter('%b %d, %Y', tz=location)
+        
+        self.stockPlot.xaxis.set_major_formatter(dateFmt)
 
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
