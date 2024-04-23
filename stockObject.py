@@ -223,18 +223,20 @@ class singleStockUI(tk.Frame):
         #self.stockPlot.xaxis.label.set_color('white')
         self.stockPlot.tick_params(axis='x', colors='white', labelsize=6)
         #self.stockPlot.yaxis.label.set_color('white')
-        self.stockPlot.tick_params(axis='y', colors='white', labelsize=6)
+        self.stockPlot.tick_params(axis='y', colors='white', labelsize=8)
 
         #stock initializes as day timeframe, choose the date formatter based on this
         location = tz.gettz("America/New_York")
         dateFmt = mdates.DateFormatter('%I:%M%p', tz=location)
         self.stockPlot.xaxis.set_major_formatter(dateFmt)
-        #self.stockPlot.xaxis_date('EST')
+        #self.stockPlot.xaxis.set_major_locator(plt.MaxNLocator(6))
 
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
         self.stockPlot.set_title(symbol, fontdict={'fontsize': 10, 'fontweight': "bold", 'color': 'white'})
+
+        self.fig.autofmt_xdate()
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
