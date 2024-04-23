@@ -219,15 +219,15 @@ class singleStockUI(tk.Frame):
 
         self.stockPlot.set_facecolor("none")
         #self.stockPlot.xaxis.label.set_color('white')
-        self.stockPlot.tick_params(axis='x', colors='white')
+        self.stockPlot.tick_params(axis='x', colors='white', labelsize=6)
         #self.stockPlot.yaxis.label.set_color('white')
-        self.stockPlot.tick_params(axis='y', colors='white')
+        self.stockPlot.tick_params(axis='y', colors='white', labelsize=6)
 
 
         #self.stockPlot.grid(axis='y', linestyle = "dashed", alpha = 0.30)
         self.stockPlot.margins(x=0)
         self.stockPlot.plot(timeToPlot, valsToPlot, color='red')
-        self.stockPlot.set_title(symbol, fontdict={'color': 'white'})
+        self.stockPlot.set_title(symbol, fontdict={'fontsize': 10, 'fontweight': "bold", 'color': 'white'})
 
         canvas = FigureCanvasTkAgg(self.fig, self)
         canvas.draw()
@@ -241,13 +241,13 @@ class singleStockUI(tk.Frame):
         else:
             txtLbl = "Price: "
 
-        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
-        self.numOwnedLbl = tk.Label(self.bottomFrame, text='Owned: 0', font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
+        self.priceLbl = tk.Label(self.bottomFrame, text=txtLbl, font=('Helvetica', '14', "bold"), fg="white", bg="black", anchor=tk.W, padx=30)
+        #self.numOwnedLbl = tk.Label(self.bottomFrame, text='Owned: 0', font=('Helvetica', '20', "bold"), fg="white", bg="black", anchor=tk.W, padx=40)
         #now geometrically place them (pack or grid). 
         #ORDER IS IMPORTANT. Place smaller ones first to ensure they don't get covered by bigger ones.
         self.bottomFrame.pack(side=tk.BOTTOM, fill = tk.BOTH, expand = 1, pady=(10,0))
         self.priceLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
-        self.numOwnedLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
+        #self.numOwnedLbl.pack(side=tk.LEFT, fill = tk.BOTH, expand = 1)
 
         #self.priceLbl.grid(row=1, column=0, sticky="nsew")
 
