@@ -45,12 +45,12 @@ class stockTrader:
 
         #create multiStockView object
         self.stockList = multiStockView(self.api_key, self.secret_key, 60, self.UI, dim)
-        currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "AAPL", TimeFrameUnit.Day, self.stockList)
         # threading.Thread(target=self.stockList.addStock, args=[currStock]).start()
         self.stockList.addStock(currStock)
-        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "GOOG", TimeFrameUnit.Day, self.stockList)
         self.stockList.addStock(currStock)
-        currStock = stockObject(api_key, secret_key, "MSFT", TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(api_key, secret_key, "MSFT", TimeFrameUnit.Day, self.stockList)
         self.stockList.addStock(currStock)
 
         #set up thread for listening for voice commands and operating on them (kind of the "main thread" in a sense)
@@ -94,7 +94,7 @@ class stockTrader:
         if stockName == 0: #invalid stock name
             return
         
-        currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(self.api_key, self.secret_key, stockName, TimeFrameUnit.Day, self.stockList)
         self.stockList.addStock(currStock)
 
 
@@ -133,7 +133,7 @@ class stockTrader:
         if stockName2 == 0: #invalid stock name
             return
 
-        currStock = stockObject(self.api_key, self.secret_key, stockName2, TimeFrameUnit.Day, self.stockList.multiStockUI)
+        currStock = stockObject(self.api_key, self.secret_key, stockName2, TimeFrameUnit.Day, self.stockList)
         self.stockList.replaceStock(stockName1, currStock)
 
     def handleTimeFrame(self, command):

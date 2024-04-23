@@ -31,10 +31,11 @@ class dataType(Enum):
 class stockObject:
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit, "oneYear" for year interval, or "fiveYear" for five year interval
-    def __init__(self, api_key, secret_key, symbol, timeframeUnit, parentUI):
+    def __init__(self, api_key, secret_key, symbol, timeframeUnit, parent):
         self.api_key = api_key
         self.secret_key = secret_key
         self.symbol = symbol
+        self.parent = parent
 
         self.model = dataType.TRADE
         
@@ -48,11 +49,12 @@ class stockObject:
         self.timeInterval = timeframeUnit
 
         self.hasUpdatedLastMinute = False
+        self.marketLastOpen = isMarketOpen(datetime.now(timezone.utc))
 
         self.initHistoricData()
 
         #stock tkinter UI object
-        self.stockUI = singleStockUI(parentUI, self.data, self.symbol)
+        self.stockUI = singleStockUI(parent.multiStockUI, self.data, self.symbol)
 
 
     #timeframeUnit is an enum alpaca.data.timeframe.TimeFrameUnit
@@ -61,7 +63,8 @@ class stockObject:
         print("changed time interval")
         self.initHistoricData()
 
-        self.stockUI.changeContents(self.data, self.symbol, self.timeInterval) #make sure to show updated data in stock UI plot
+        if self.parent.changes:
+            self.stockUI.changeContents(self.data, self.symbol, self.timeInterval) #make sure to show updated data in stock UI plot
 
 
     def initHistoricData(self):
@@ -146,6 +149,10 @@ class stockObject:
 
         self.data.clear()
 
+        if len(barData) == 0:
+            self.data.append({"price": 0,
+                            "timestamp": datetime.now(timezone.utc)})
+
         i = 0
         while i < len(barData):
             if self.timeInterval == TimeFrameUnit.Month or self.timeInterval == "oneYear" or self.timeInterval == "fiveYear":
@@ -176,25 +183,45 @@ class stockObject:
     def periodicDataUpdate(self):
         #if market isnt open, no point in periodic data updates
         if isMarketOpen(datetime.now(timezone.utc)):
-            #do something with lock, also if allowChanges = true: currStock.stockUI.changeContents(currStock.data, currStock.symbol, currStock.timeInterval). Push a new entry if necessary to data queue
-            # match self.timeInterval:
-            #     case TimeFrameUnit.Hour:
-
-            #     case TimeFrameUnit.Day:
-
-            #     case TimeFrameUnit.Week:
-
-            #     case TimeFrameUnit.Month:
-
-            #     case "oneYear":
-
-            #     case _:
+            if not self.marketLastOpen:
+                self.marketLastOpen = True
+                self.initHistoricData() #reinit data for on screen stocks when new trading day opens (ex: update what days included in last 1 week)
+                return
             
-            if self.hasUpdatedLastMinute:
-                self.initHistoricData()
-            else:
-                self.initHistoricData() #cant do this because it will overwrite websocket updates becasue of 15 minute delay
+            #do something with lock, also if allowChanges = true: currStock.stockUI.changeContents(currStock.data, currStock.symbol, currStock.timeInterval). Push a new entry if necessary to data queue
+            self.dataLock.acquire()
+            if len(self.data) == 0:
+                self.dataLock.release()
+                return
+            
+            match self.timeInterval:
+                case TimeFrameUnit.Hour:
+                    print("hour periodic update:")
+                    lastPrice = self.data[-1]["price"]
+                    self.data.append({"price": lastPrice,
+                                     "timestamp": datetime.now(timezone.utc)})
 
+                case TimeFrameUnit.Day:
+                    lastPrice = self.data[-1]["price"]
+                    self.data.append({"price": lastPrice,
+                                     "timestamp": datetime.now(timezone.utc)})
+
+                case TimeFrameUnit.Week:
+                    lastPrice = self.data[-1]["price"]
+                    self.data.append({"price": lastPrice,
+                                     "timestamp": datetime.now(timezone.utc)})
+                #CURRENTLY NO UPDATES OF PUSHING TO THE QUEUE FOR MONTH, YEAR, 5YEAR
+                    
+            self.dataLock.release()
+            
+            #show updated data in stock UI plot after main loop has started running
+            if self.parent.changes:
+                self.stockUI.changeContents(self.data, self.symbol, self.timeInterval)
+            
+
+        else:
+            if self.marketLastOpen:
+                self.marketLastOpen = False
 
 class singleStockUI(tk.Frame):
     def __init__(self, parent, data, symbol):
@@ -273,6 +300,9 @@ class singleStockUI(tk.Frame):
         print("hi")
         timeToPlot = [sub["timestamp"] for sub in data]
         valsToPlot = [sub["price"] for sub in data]
+        if timeInterval == TimeFrameUnit.Minute:
+            print("vals:")
+            print(valsToPlot)
 
         txtLbl = 0
         if len(data) > 0:

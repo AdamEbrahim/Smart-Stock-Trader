@@ -170,6 +170,7 @@ class multiStockView:
 
             currStock.data.append({"price": data.price,
                                 "timestamp": data.timestamp})
+            print(data.price)
         else:
             currStock.data[-1]["price"] = data.price
             currStock.data[-1]["timestamp"] = data.timestamp
