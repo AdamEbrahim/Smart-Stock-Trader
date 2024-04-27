@@ -1,10 +1,25 @@
 # Smart-Stock-Trader
-Standalone device that you can place on your desk to interact with the stock market and your trading portfolio in real time. This program can be run on a standard computer (MacOS, Windows, Linux) or a Raspberry Pi with a monitor and microphone. A PIR sensor and LED strip can optionally be used with the Raspberry Pi to enable the device to turn on and off based on if a user is in front of the device and to display whether or not the user's portfolio is at a profit or loss on the day. 
+Standalone device that you can place on your desk to interact with the stock market and your trading portfolio in real time using voice control. This program can be run on a standard computer (MacOS, Windows, Linux) or a Raspberry Pi with a monitor and microphone. A PIR sensor and LED strip can optionally be used with the Raspberry Pi to enable the device to turn on and off based on if a user is in front of the device and to display whether or not the user's portfolio is at a profit or loss on the day. 
 
 This program requires the user to have a registered Brokerage Account with Alpaca (https://alpaca.markets/). It can be used with both a real or paper trading account.
 
 Functionality includes:
-1. Test
+1. Turns on upon detecting your arrival and stays on until you leave
+2. Complete voice control
+3. View multiple stock graphs + current price
+- Real time updates when markets open through live websocket connections
+- Change time frame of stock graphs (1min, 1h, 1d, 1w, 1m, 1y, 5y)
+- Calibration updates based on if market is open or closed and time frame
+4. Change (add, remove, replace) stocks on view with:
+- Specific stocks.
+- Top movers (gainers or losers)
+- Stocks in your portfolio
+5. Execute market or limit trades (buy or sell) for any stock
+- Quantity of stocks or dollar value of stocks
+- Confirmation and invalid trade checking
+- Paper or real money
+6. Green or red glow to signal portfolio gain or loss on the day, respectively
+
 
 Demo Video:
 1. Test2
@@ -142,3 +157,4 @@ python3 mainTesting.py
 ```
 
 ## Voice Control Commands
+1. Add <Stock Name>
