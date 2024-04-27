@@ -7,17 +7,17 @@ Functionality includes:
 1. Turns on upon detecting your arrival and stays on until you leave
 2. Complete voice control
 3. View multiple stock graphs + current price
-- Real time updates when markets open through live websocket connections
-- Change time frame of stock graphs (1min, 1h, 1d, 1w, 1m, 1y, 5y)
-- Calibration updates based on if market is open or closed and time frame
+    - Real time updates when markets open through live websocket connections
+    - Change time frame of stock graphs (1min, 1h, 1d, 1w, 1m, 1y, 5y)
+    - Calibration updates based on if market is open or closed and time frame
 4. Change (add, remove, replace) stocks on view with:
-- Specific stocks.
-- Top movers (gainers or losers)
-- Stocks in your portfolio
+    - Specific stocks.
+    - Top movers (gainers or losers)
+    - Stocks in your portfolio
 5. Execute market or limit trades (buy or sell) for any stock
-- Quantity of stocks or dollar value of stocks
-- Confirmation and invalid trade checking
-- Paper or real money
+    - Quantity of stocks or dollar value of stocks
+    - Confirmation and invalid trade checking
+    - Paper or real money
 6. Green or red glow to signal portfolio gain or loss on the day, respectively
 
 
@@ -157,4 +157,13 @@ python3 mainTesting.py
 ```
 
 ## Voice Control Commands
-1. Add <Stock Name>
+The voice commands must follow the structures below to achieve the desired functionality. Any words in brackets are meant to be replaced with the user's desired inputs. Any brackets with quotations signal that the user should choose one of the options inside the quotations.
+
+1. Add [Stock Name] - Adds a stock to the view
+2. Remove [Stock Name] - Removes a stock from the view
+3. Replace [Stock Name To Remove] [Stock Name To Add] - Replaces a stock with another stock
+4. Change Time Frame [Stock Name] [Time Frame] - Changes the time frame of a stock graph. Time frames include: "Minute" (1min), "hour" (1h), "day" (1d), "week" (1w), "month" (1m), "year" (1y), and "max" (5y)
+5. View Top Movers ["gainers", "losers"] - Displays the top gainers or losers of the day in the view
+6. View Portfolio - Displays stocks in the user's portfolio in the view
+7. Market ["purchase", "sale"] ["quantity", "value"] [QtyOrValue #/Price] [Stock Name] - Executes a market trade for a stock. The user can choose to input the quantity of stocks or the dollar value of stocks to trade. 
+8. Limit ["purchase", "sale"] ["quantity", "value"] [QtyOrValue #/Price] Limit [Limit Price] [Stock Name] - Executes a limit trade for a stock. The user can choose to input the quantity of stocks or the dollar value of stocks to trade. The user must also input the limit price of the trade.
