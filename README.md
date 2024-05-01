@@ -3,6 +3,8 @@ Standalone device that you can place on your desk to interact with the stock mar
 
 This program requires the user to have a registered Brokerage Account with Alpaca (https://alpaca.markets/). It can be used with both a real or paper trading account.
 
+<img width=700 alt="IMG_2065" src="https://github.com/AdamEbrahim/Smart-Stock-Trader/assets/110650531/8f93b03c-5569-42f6-bade-953c73c827ce">
+
 Functionality includes:
 1. Turns on upon detecting your arrival and stays on until you leave
 2. Complete voice control
