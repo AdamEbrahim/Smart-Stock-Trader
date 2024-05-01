@@ -23,8 +23,8 @@ Functionality includes:
 6. Green or red glow to signal portfolio gain or loss on the day, respectively
 
 
-Demo Video:
-1. Test2
+Demo:
+View the demo at the following link! https://drive.google.com/file/d/1dZrZ6EGAUkelZCCUsYauQ71Zx6dHLJ5C/view?usp=sharing
 
 
 ## Installation
